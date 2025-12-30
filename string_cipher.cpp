@@ -58,7 +58,7 @@ int main() {
         }
     }
     
-    cout << "Mensagem descifrada: " << mensagem << endl;
+    cout << "Mensagem decifrada: " << mensagem << endl;
 
     return 0;
 }
