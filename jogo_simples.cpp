@@ -22,6 +22,10 @@ int main() {
     };
 
     Robo robo1;
+    Robo tentativa;
+
+    tentativa.y = 0;
+    tentativa.x = 1;
 
     robo1.y = 0;
     robo1.x = 1;
@@ -47,6 +51,12 @@ int main() {
     bool continua = true;
 
     while (continua){
+
+        #ifdef _WIN32
+            system("cls"); // Se estiver no Windows
+        #else
+            system("clear"); // Se estiver no Linux/Mac
+        #endif
         
         for(size_t i{0}; i < mapa.size(); ++i){
             for(size_t j{0}; j < mapa.at(i).size(); ++j){
@@ -73,36 +83,42 @@ int main() {
 
         switch (op)
         {
-        case 'W':
-            //IRA SUBIR UMA LINHA
-            robo1.y -= 1;
-            break;
-
-        case 'A':
-            //IRA MOVER 1 COLUNA PRA ESQUERDA
-            robo1.x -= 1;
-            break;
-
-        case 'S':
-            //IRA DESCER UMA LINHA
-            robo1.y += 1;
-            break;
-
-        case 'D':
-            //IRA MOVER 1 COLUNA PRA DIREITA
-            robo1.x += 1;
-            break;
-
-        case 'Q':
+        case 'W': tentativa.y -= 1; break;
+        case 'A': tentativa.x -= 1; break;
+        case 'S':  tentativa.y += 1; break; 
+        case 'D': tentativa.x += 1; break;
+        case 'Q': 
             cout << "Saindo..." << endl;
-            continua = false;
+            continua = false; 
             break;
-        
         default:
             cout << "Not a valid option" << endl;
-            break;
+            break;  
         }
-    }
-    
+
+        // Se tentativa.y for -1, a primeira condição falha e o C++ PARA de ler o resto.
+        bool dentroDosLimites = (tentativa.y >= 0 && tentativa.y < mapa.size()) && 
+                                (tentativa.x >= 0 && tentativa.x < mapa[0].size());
+
+        // Só acessamos o mapa se estivermos dentro dos limites
+        if (dentroDosLimites && mapa[tentativa.y][tentativa.x] == 0) {
+            // Movimento Aprovado
+            robo1.y = tentativa.y;
+            robo1.x = tentativa.x;
+        } 
+        else {
+            // Movimento Recusado (bateu na parede ou saiu do mundo)
+            cout << "BATEU! Movimento invalido!" << endl;
+            
+            // Importante: Resetar a tentativa para o robô não ficar "desincronizado"
+            tentativa.y = robo1.y;
+            tentativa.x = robo1.x;
+            
+            // Dica: Um system("pause") ou cin.get() aqui ajuda o usuário a ler a mensagem de erro
+            cin.ignore(); 
+            cin.get();
+        }
+        }
+            
     return 0;
 }
