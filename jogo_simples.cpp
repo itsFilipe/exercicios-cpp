@@ -1,124 +1,145 @@
-//jogo simples para movimentar robo sem deixar bater nas paredes.
+//jogo simples para estudo
 
 #include <iostream>
 #include <vector>
+#include <cstdlib> // Para system()
 
 using namespace std;
 
-int main() {
+// === CLASSE ROBO ===
+// O Robô agora é uma entidade inteligente que sabe se cuidar.
+class Robo {
+private:
+    // Dados privados: Ninguém de fora pode tocar aqui diretamente.
+    int x, y; 
 
-    //mapa[][] linha/coluna
-    vector <vector <int>> mapa = 
-    {
-        {1,0,0,0,1},
-        {1,0,0,0,1},
-        {1,0,0,0,1},
-        {1,0,0,0,1},
-        {1,0,0,0,1}
-    }; 
+public:
+    // CONSTRUTOR: Define onde o robô nasce.
+    // Uso de "Member Initializer List" (: x(inicioX)...) -> Mais eficiente que fazer atribuição dentro {}.
+    Robo(int inicioX, int inicioY) : x(inicioX), y(inicioY) {}
 
-    struct Robo {
-        int y, x;
-    };
+    // GETTERS: Métodos de leitura (Read-Only)
+    // O 'const' no final avisa o compilador: "Esse método NÃO altera o robô".
+    int getX() const { return x; }
+    int getY() const { return y; }
 
-    Robo robo1;
-    Robo tentativa;
+    // O CÉREBRO: Método que tenta realizar o movimento
+    // Recebe o mapa por REFERÊNCIA CONSTANTE (const vector... &)
+    // Motivo: Não queremos copiar o mapa (lento) e não queremos estragar o mapa (const).
+    bool tentarMover(char comando, const vector<vector<int>>& mapa) {
+        
+        // 1. Calcula a intenção (Fantasma)
+        int novoX = x;
+        int novoY = y;
 
-    tentativa.y = 0;
-    tentativa.x = 1;
+        switch (comando) {
+            case 'W': novoY--; break;
+            case 'S': novoY++; break;
+            case 'A': novoX--; break;
+            case 'D': novoX++; break;
+            default: return false; // Comando inválido
+        }
 
-    robo1.y = 0;
-    robo1.x = 1;
+        // 2. Validação (Encapsulada dentro da classe)
+        // O Robô é responsável por saber se ele cabe no lugar.
+        
+        // Verifica Limites (Bounds Checking)
+        if (novoY < 0 || novoY >= mapa.size() || 
+            novoX < 0 || novoX >= mapa[0].size()) {
+            return false; // Saiu do mapa
+        }
 
-    /*
-    for(size_t i{0}; i < mapa.size(); ++i){
-        for(size_t j{0}; j < mapa.at(i).size(); ++j){
-            cout << mapa[i][j] << " ";
+        // Verifica Paredes (Collision Checking)
+        if (mapa[novoY][novoX] == 1) {
+            return false; // Bateu na parede
+        }
+
+        // 3. Commit
+        // Se chegou aqui, é seguro. Atualiza o estado interno.
+        x = novoX;
+        y = novoY;
+        return true; // Sucesso
+    }
+};
+
+// === FUNÇÃO DE RENDERIZAÇÃO ===
+// Separei a renderização da Main para ficar mais limpo.
+// Recebe o Robô como referência const (apenas leitura).
+void desenharTela(const vector<vector<int>>& mapa, const Robo& robo) {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+
+    cout << "--- NAVEGADOR OOP ---" << endl;
+    cout << "Posicao Atual: [" << robo.getY() << "][" << robo.getX() << "]" << endl;
+
+    for (size_t i = 0; i < mapa.size(); i++) {
+        for (size_t j = 0; j < mapa[i].size(); j++) {
+            
+            // Usamos os Getters aqui, pois x e y são privados
+            if (i == robo.getY() && j == robo.getX()) {
+                cout << " R "; 
+            } else if (mapa[i][j] == 1) {
+                cout << "[#]"; 
+            } else {
+                cout << " . "; 
+            }
         }
         cout << endl;
     }
+}
 
-    mais moderno
+// === MAIN (CONTROLE) ===
+int main() {
+    // Mapa: 1=Parede, 0=Livre
+    // Dica: 'static const' aqui seria melhor em projetos grandes, mas ok por enquanto.
+    vector<vector<int>> mapa = {
+        {1, 0, 1, 0, 0, 0, 1, 1, 1, 1},
+        {1, 0, 1, 0, 1, 0, 0, 0, 0, 1},
+        {1, 0, 0, 0, 1, 1, 1, 1, 0, 1},
+        {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+        {1, 0, 1, 0, 1, 1, 1, 1, 0, 1},
+        {1, 0, 1, 0, 1, 0, 0, 0, 0, 1},
+        {1, 0, 1, 0, 1, 0, 1, 1, 0, 1},
+        {1, 0, 0, 0, 0, 0, 1, 0, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
+        {1, 1, 1, 1, 1, 1, 1, 1, 0, 1}
+    };
 
-    for (const auto& linha : mapa) {
-        for (auto elemento : linha) {
-            std::cout << elemento << " ";
-        }
-        std::cout << std::endl;
-    }
-    */
+    // Instancia o objeto Robô (Construtor chamado aqui)
+    Robo meuRobo(1, 0); // x=1, y=0
 
-    bool continua = true;
+    bool rodando = true;
 
-    while (continua){
-
-        #ifdef _WIN32
-            system("cls"); // Se estiver no Windows
-        #else
-            system("clear"); // Se estiver no Linux/Mac
-        #endif
+    while (rodando) {
         
-        for(size_t i{0}; i < mapa.size(); ++i){
-            for(size_t j{0}; j < mapa.at(i).size(); ++j){
-                if(robo1.y == i && robo1.x == j)
-                    cout << " # ";
-                else if (mapa[i][j] == 0)
-                    cout << " - ";
-                else 
-                    cout << " | ";
-            }
-            cout << endl;
+        // 1. Renderiza
+        desenharTela(mapa, meuRobo);
+
+        // 2. Input
+        char comando;
+        cout << "\nComando (WASD / Q): ";
+        cin >> comando;
+        comando = toupper(comando);
+
+        if (comando == 'Q') {
+            rodando = false;
+            continue;
         }
 
-        char op;
-
-        cout << "W - CIMA" << endl;
-        cout << "A - ESQUERDA" << endl;
-        cout << "S - BAIXO" << endl;
-        cout << "D - DIREITA" << endl;
-        cout << "Q - SAIR" << endl;
-        cout << "Insira um comando" << endl;
-        cin >> op;
-        op = toupper(op);
-
-        switch (op)
-        {
-        case 'W': tentativa.y -= 1; break;
-        case 'A': tentativa.x -= 1; break;
-        case 'S':  tentativa.y += 1; break; 
-        case 'D': tentativa.x += 1; break;
-        case 'Q': 
-            cout << "Saindo..." << endl;
-            continua = false; 
-            break;
-        default:
-            cout << "Not a valid option" << endl;
-            break;  
+        // 3. Ação
+        // A main não sabe COMO o robô se move, ela só PEDE para ele tentar.
+        // Isso é abstração.
+        if (meuRobo.tentarMover(comando, mapa)) {
+            // Se retornou true, moveu com sucesso.
+            // Poderíamos tocar um som aqui, por exemplo.
+        } else {
+            // Se retornou false (bateu), o robô não se mexeu.
+            // A gente nem precisa "desfazer" nada, porque o robô já se protejeu internamente.
         }
+    }
 
-        // Se tentativa.y for -1, a primeira condição falha e o C++ PARA de ler o resto.
-        bool dentroDosLimites = (tentativa.y >= 0 && tentativa.y < mapa.size()) && 
-                                (tentativa.x >= 0 && tentativa.x < mapa[0].size());
-
-        // Só acessamos o mapa se estivermos dentro dos limites
-        if (dentroDosLimites && mapa[tentativa.y][tentativa.x] == 0) {
-            // Movimento Aprovado
-            robo1.y = tentativa.y;
-            robo1.x = tentativa.x;
-        } 
-        else {
-            // Movimento Recusado (bateu na parede ou saiu do mundo)
-            cout << "BATEU! Movimento invalido!" << endl;
-            
-            // Importante: Resetar a tentativa para o robô não ficar "desincronizado"
-            tentativa.y = robo1.y;
-            tentativa.x = robo1.x;
-            
-            // Dica: Um system("pause") ou cin.get() aqui ajuda o usuário a ler a mensagem de erro
-            cin.ignore(); 
-            cin.get();
-        }
-        }
-            
     return 0;
 }
