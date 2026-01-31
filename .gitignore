@@ -1,2 +1,7 @@
 /.vscode
 /output
+
+*.exe
+*.o
+*.out
+jogo
