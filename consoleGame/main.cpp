@@ -43,13 +43,31 @@ int main() {
             heroi.desenharBarra();
             vilao.desenharBarra();
 
-            std::cout << "\n[1] Atacar  [2] Curar\nEscolha: ";
+            std::cout << "Faça sua jogada: \n";
+            std::cout << "[1] Atacar  [2] Curar [3] Especiais\nEscolha: ";
             int escolha;
             std::cin >> escolha;
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
 
             if (escolha == 1) heroi.atacar(vilao);
             else if (escolha == 2) heroi.curar();
+            else if (escolha == 3) {
+                if(heroi.getMana() >= 30){
+                    std::cout << "Escolha um: \n";
+                    std::cout << "[1] Ataque Pesado [2] Drenar vida \n";
+                    int escolha;
+                    std::cin >> escolha;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
+
+                    switch (escolha){
+                    case 1: heroi.ataqueEspecial(vilao); break;
+
+                    case 2: heroi.drenarVida(vilao);     break;
+                    
+                    default: std::cout << "Opcao invalida! Perdeu a vez.\n"; break;
+                    }  
+                } else { std::cout << "Mana insuficiente\n"; }
+            }
             else std::cout << "Opcao invalida! Perdeu a vez.\n";
 
             if (vilao.getVida() == 0) {
@@ -79,3 +97,23 @@ int main() {
     }
     return 0;
 }
+
+/*
+3. O Sistema de "Habilidades Especiais" (Mana/Stamina)
+
+Conceito: Só "Atacar" e "Curar" enjoa. Vamos dar poderes ao Filipe. O Desafio Técnico: Gerenciamento de Estado complexo e Enums.
+
+    Novos Atributos: Adicione size_t mana e size_t mana_maxima.
+
+    A Lógica:
+
+        O ataque básico gera Mana (ex: +10).
+
+        No menu de ataque, abra um sub-menu de Habilidades:
+
+            Golpe Pesado (Custa 30 Mana): Dano dobrado, mas tem chance maior de errar.
+
+            Drenar Vida (Custa 50 Mana): Causa dano e cura você em 50% do dano causado (Vampirismo).
+
+    Por que implementar? Você aprende a criar regras condicionais complexas ("Só pode usar se tiver mana", "Se usar X, acontece Y e Z").
+*/
