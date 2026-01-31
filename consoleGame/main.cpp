@@ -6,13 +6,8 @@
 #include "Lutador.h" 
 
 // Função auxiliar para limpar tela cross-platform
-void limparTela() {
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
-}
+void limparTela();
+void menuLoja(Lutador &l);
 
 int main() {
     srand(time(0));
@@ -52,21 +47,14 @@ int main() {
             if (escolha == 1) heroi.atacar(vilao);
             else if (escolha == 2) heroi.curar();
             else if (escolha == 3) {
-                if(heroi.getMana() >= 30){
-                    std::cout << "Escolha um: \n";
-                    std::cout << "[1] Ataque Pesado [2] Drenar vida \n";
-                    int escolha;
-                    std::cin >> escolha;
-                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
+                std::cout << "Escolha Habilidade: [1] Ataque Pesado (30 MP) [2] Drenar Vida (50 MP)\n";
+                int habilidade;
+                std::cin >> habilidade;
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
 
-                    switch (escolha){
-                    case 1: heroi.ataqueEspecial(vilao); break;
-
-                    case 2: heroi.drenarVida(vilao);     break;
-                    
-                    default: std::cout << "Opcao invalida! Perdeu a vez.\n"; break;
-                    }  
-                } else { std::cout << "Mana insuficiente\n"; }
+                if (habilidade == 1) heroi.ataqueEspecial(vilao);
+                else if (habilidade == 2) heroi.drenarVida(vilao);
+                else std::cout << "Habilidade inexistente.\n";
             }
             else std::cout << "Opcao invalida! Perdeu a vez.\n";
 
@@ -88,7 +76,8 @@ int main() {
         }
 
         if (heroi.getVida() > 0) {
-            heroi.receberBonus();
+            heroi.ganharOuro((rand() % 50) + 20);
+            std::cout << "\nVoce ganhou ouro! Total de Ouro: " << heroi.getOuro() << "\n";  
             round++;
         } else {
             std::cout << "\n=== FIM DE JOGO ===\n";
@@ -99,21 +88,74 @@ int main() {
 }
 
 /*
-3. O Sistema de "Habilidades Especiais" (Mana/Stamina)
+Entre rounds, em vez de curar automático, abra um Menu de Loja:
 
-Conceito: Só "Atacar" e "Curar" enjoa. Vamos dar poderes ao Filipe. O Desafio Técnico: Gerenciamento de Estado complexo e Enums.
+--- LOJA DO GOBLIN ---
 
-    Novos Atributos: Adicione size_t mana e size_t mana_maxima.
+Seu Ouro: 120
 
-    A Lógica:
+[1] Poção de Vida (50 ouro)
 
-        O ataque básico gera Mana (ex: +10).
+[2] Afiar Espada (+5 Dano) (100 ouro)
 
-        No menu de ataque, abra um sub-menu de Habilidades:
+[3] Armadura Nova (+10 Vida Max) (150 ouro)
 
-            Golpe Pesado (Custa 30 Mana): Dano dobrado, mas tem chance maior de errar.
+[4] Sair e Lutar
 
-            Drenar Vida (Custa 50 Mana): Causa dano e cura você em 50% do dano causado (Vampirismo).
-
-    Por que implementar? Você aprende a criar regras condicionais complexas ("Só pode usar se tiver mana", "Se usar X, acontece Y e Z").
+Por que implementar? Adiciona profundidade estratégica. 
+O jogador precisa gerenciar recursos escassos (Dinheiro vs Vida). 
 */
+
+void limparTela() {
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
+
+void menuLoja(Lutador &l){
+    std::cout << "--- LOJA DO GOBLIN ---\n";
+    std::cout << "Seu ouro: " << l.getOuro() << "\n";
+    std::cout << "[1] Poção de Vida (50 ouro)\n";
+    std::cout << "[2] Afiar Espada (+5 Dano) (100 ouro)\n";
+    std::cout << "[3] Armadura Nova (+10 Vida Max) (150 ouro)\n";
+    std::cout << "[4] Sair e Lutar\n";
+    std::cout << "Digite uma opcao: ";
+
+    size_t op {0};
+    std::cin >> op;
+
+    do
+    {
+        switch (op)
+        {
+        case 1:     
+            //comprar ouro
+            break;
+
+        case 2:
+            //comprar dano
+            break;
+
+        case 3:
+            //comprar vida
+            break;  
+
+        case 4:
+            std::cout << "Saindo da loja...\n";
+            break;
+        
+        default: 
+            std::cout << "Opcao invalida\n";
+            break;
+        }
+    } while (op != 4);
+    
+    
+
+
+
+
+
+}

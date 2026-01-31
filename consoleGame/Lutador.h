@@ -13,11 +13,11 @@ private:
     size_t pocao_vida;
     size_t mana; 
     size_t mana_maxima;
-
+    size_t ouro;
 
 public:
     // Construtor
-    Lutador(std::string n, size_t v, size_t d, size_t vm = 0, size_t pv = 0, size_t m = 0, size_t mm = 100);
+    Lutador(std::string n, size_t v, size_t d, size_t vm = 0, size_t pv = 0, size_t m = 0, size_t mm = 100, size_t o = 0);
 
     // Getters
     std::string getNome() const;
@@ -27,14 +27,15 @@ public:
     size_t getPocaoVida() const;
     size_t getMana() const;
     size_t getManaMaxima() const;
+    size_t getOuro() const;
 
     // Ações
     void atacar(Lutador &l);
     void curar();
-    void receberBonus();
     void desenharBarra(); 
     void ataqueEspecial(Lutador &l);
     void drenarVida(Lutador &l);
+    void ganharOuro(size_t quantidade);
 };
 
 #endif // Fim do IF

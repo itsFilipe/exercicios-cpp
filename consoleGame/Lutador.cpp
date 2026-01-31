@@ -10,8 +10,8 @@
 #define BLUE    "\033[34m"
 
 // Implementação do Construtor
-Lutador::Lutador(std::string n, size_t v, size_t d, size_t vm, size_t pv, size_t m, size_t mm)
-    : nome(n), vida(v), dano(d), vida_maxima(vm), pocao_vida(pv), mana(m), mana_maxima(mm) {}
+Lutador::Lutador(std::string n, size_t v, size_t d, size_t vm, size_t pv, size_t m, size_t mm, size_t o)
+    : nome(n), vida(v), dano(d), vida_maxima(vm), pocao_vida(pv), mana(m), mana_maxima(mm), ouro(o) {}
 
 // Implementação dos Getters
 std::string Lutador::getNome() const { return nome; }
@@ -21,6 +21,7 @@ size_t Lutador::getVidaMaxima() const { return vida_maxima; }
 size_t Lutador::getPocaoVida() const { return pocao_vida; }
 size_t Lutador::getMana() const { return mana; }
 size_t Lutador::getManaMaxima() const { return mana_maxima; }
+size_t Lutador::getOuro() const { return ouro; }
 
 // Ações
 void Lutador::atacar(Lutador &l) {
@@ -67,48 +68,58 @@ void Lutador::curar() {
     pocao_vida -= 1;
 }
 
-void Lutador::receberBonus() {
-    vida_maxima += 10;
-    dano += 5;
-    vida += 20;
-    if(vida > vida_maxima) vida = vida_maxima;
-    std::cout << BLUE << "\n[LEVEL UP] " << nome << " ficou mais forte!" << RESET << "\n";
-}
+void Lutador::ataqueEspecial(Lutador &l) {
+    // 1. Custo e Verificação
+    if (mana < 30) {
+        std::cout << "Mana insuficiente para Ataque Pesado!\n";
+        return;
+    }
+    
+    // 2. Gastar a Mana (MUITO IMPORTANTE)
+    mana -= 30;
 
-void Lutador::ataqueEspecial(Lutador &l){
-    size_t dano_real = dano + (rand() % (dano / 2 + 1)); //como aumento a chance de errar?
+    // 3. Chance de Errar (RNG)
+    // Gera número de 0 a 99. Se for menor que 25 (0 a 24), errou.
+    if ((rand() % 100) < 25) { 
+        std::cout << YELLOW << nome << " tentou um golpe pesado, escorregou e ERROU feio!" << RESET << "\n";
+        return; // Sai da função, não causa dano
+    }
+
+    // Se passou pelo if acima, acertou!
+    size_t dano_real = dano + (rand() % (dano / 2 + 1)); 
     
     if (l.vida <= dano_real) {
         l.vida = 0;
     } else {
         l.vida -= dano_real;
     }
-    // Cor Vermelha para ataque
-    std::cout << RED << nome << " usou o ataque especial " << l.nome 
-              << " causando " << dano_real << " de dano." << RESET << "\n";
+
+    std::cout << RED << nome << " ACERTOU UM GOLPE DEVASTADOR em " << l.nome 
+              << " causando " << dano_real << " de dano!" << RESET << "\n";
 }
 
-void Lutador::drenarVida(Lutador &l){
+void Lutador::drenarVida(Lutador &l) {
+    // Vamos definir que esse custa mais caro, ex: 50
+    if (mana < 50) {
+        std::cout << "Mana insuficiente para Drenar Vida (Precisa de 50)!\n";
+        return;
+    }
+
+    mana -= 50; // Desconta a mana
+
+    // Dano um pouco menor que o ataque normal, pois cura
     size_t dano_real = (dano / 2) + (rand() % (dano / 2 + 1));
     
-    if (l.vida <= dano_real) {
-        l.vida = 0;
-    } else {
-        l.vida -= dano_real;
-    }
+    if (l.vida <= dano_real) l.vida = 0;
+    else l.vida -= dano_real;
 
-    size_t cura = dano_real / 2;
+    size_t cura = dano_real / 2; // Cura metade do dano causado
 
-    if (vida + cura > vida_maxima) {
-        vida = vida_maxima;
-    } else {
-        vida += cura;
-    }
+    if (vida + cura > vida_maxima) vida = vida_maxima;
+    else vida += cura;
 
-    // Cor Vermelha para ataque
-    std::cout << RED << nome << " atacou " << l.nome 
-              << " causando " << dano_real << " de dano e aumentou sua vida em " << cura
-              << RESET << "\n";
+    std::cout << RED << nome << " drenou a energia vital de " << l.nome 
+              << "! (Dano: " << dano_real << " | " << GREEN << "Cura: +" << cura << RESET << ")\n";
 }
 
 void Lutador::desenharBarra() {
@@ -126,4 +137,8 @@ void Lutador::desenharBarra() {
 
     std::cout << RESET << "] " << vida << "/" << vida_maxima
     << " MANA: " << mana << "/" << mana_maxima << "\n";
+}
+
+void Lutador::ganharOuro(size_t quantidade) {
+    ouro += quantidade;
 }
