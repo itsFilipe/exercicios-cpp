@@ -38,7 +38,7 @@ int main() {
             heroi.desenharBarra();
             vilao.desenharBarra();
 
-            std::cout << "Faça sua jogada: \n";
+            std::cout << "Faca sua jogada: \n";
             std::cout << "[1] Atacar  [2] Curar [3] Especiais\nEscolha: ";
             int escolha;
             std::cin >> escolha;
@@ -78,6 +78,7 @@ int main() {
         if (heroi.getVida() > 0) {
             heroi.ganharOuro((rand() % 50) + 20);
             std::cout << "\nVoce ganhou ouro! Total de Ouro: " << heroi.getOuro() << "\n";  
+            menuLoja(heroi);
             round++;
         } else {
             std::cout << "\n=== FIM DE JOGO ===\n";
@@ -86,25 +87,6 @@ int main() {
     }
     return 0;
 }
-
-/*
-Entre rounds, em vez de curar automático, abra um Menu de Loja:
-
---- LOJA DO GOBLIN ---
-
-Seu Ouro: 120
-
-[1] Poção de Vida (50 ouro)
-
-[2] Afiar Espada (+5 Dano) (100 ouro)
-
-[3] Armadura Nova (+10 Vida Max) (150 ouro)
-
-[4] Sair e Lutar
-
-Por que implementar? Adiciona profundidade estratégica. 
-O jogador precisa gerenciar recursos escassos (Dinheiro vs Vida). 
-*/
 
 void limparTela() {
     #ifdef _WIN32
@@ -115,47 +97,72 @@ void limparTela() {
 }
 
 void menuLoja(Lutador &l){
-    std::cout << "--- LOJA DO GOBLIN ---\n";
-    std::cout << "Seu ouro: " << l.getOuro() << "\n";
-    std::cout << "[1] Poção de Vida (50 ouro)\n";
-    std::cout << "[2] Afiar Espada (+5 Dano) (100 ouro)\n";
-    std::cout << "[3] Armadura Nova (+10 Vida Max) (150 ouro)\n";
-    std::cout << "[4] Sair e Lutar\n";
-    std::cout << "Digite uma opcao: ";
-
-    size_t op {0};
-    std::cin >> op;
-
+    bool sair = false;
     do
     {
+        std::cout << "--- LOJA DO GOBLIN ---\n";
+        std::cout << "Seu ouro: " << l.getOuro() << "\n";
+        std::cout << "[1] Poção de Vida (50 ouro)\n";
+        std::cout << "[2] Afiar Espada (+5 Dano) (100 ouro)\n";
+        std::cout << "[3] Armadura Nova (+10 Vida Max) (150 ouro)\n";
+        std::cout << "[4] Sair e Lutar\n";
+        std::cout << "Digite uma opcao: ";
+
+        size_t op {0};
+        std::cin >> op;
         switch (op)
         {
-        case 1:     
-            //comprar ouro
+        case 1:
+            if(l.getOuro() < 50){
+                std::cout << "Ouro insuficiente!\n";
+                break;
+            }
+            l.aumentarPocao();
+            l.diminuirOuro(50);
+            std::cout << "Voce comprou uma pocao de vida! Total de pocoes: " << l.getPocaoVida() << "\n";
+            std::cout << "Gastou 50 de ouro. Ouro restante: " << l.getOuro() << "\n";
+
             break;
 
         case 2:
-            //comprar dano
+            if(l.getOuro() < 100){
+                std::cout << "Ouro insuficiente!\n";
+                break;
+            }
+            l.aumentarDano();
+            l.diminuirOuro(100);
+
+            std::cout << "Voce aumentou seu dano em 5 pontos!\n";
+            std::cout << "Dano atual: " << l.getDano() << "\n";
+            std::cout << "Gastou 100 de ouro. Ouro restante: " << l.getOuro() << "\n";
+
             break;
 
         case 3:
-            //comprar vida
+            if(l.getOuro() < 150){
+                std::cout << "Ouro insuficiente!\n";
+                break;
+            }
+            l.aumentarVidaMaxima();
+            l.diminuirOuro(150);
+
+            std::cout << "Voce aumentou sua vida maxima em 10 pontos!\n";
+            std::cout << "Vida Maxima atual: " << l.getVidaMaxima() << "\n";
+            std::cout << "Gastou 150 de ouro. Ouro restante: " << l.getOuro() << "\n";
+
             break;  
 
         case 4:
             std::cout << "Saindo da loja...\n";
+            sair = true;
+
             break;
         
         default: 
             std::cout << "Opcao invalida\n";
             break;
         }
-    } while (op != 4);
-    
-    
+    } while (!sair);
 
-
-
-
-
+    return;
 }

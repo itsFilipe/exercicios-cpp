@@ -36,6 +36,10 @@ public:
     void ataqueEspecial(Lutador &l);
     void drenarVida(Lutador &l);
     void ganharOuro(size_t quantidade);
+    void diminuirOuro(size_t quantidade);
+    void aumentarPocao();
+    void aumentarDano();
+    void aumentarVidaMaxima();
 };
 
 #endif // Fim do IF

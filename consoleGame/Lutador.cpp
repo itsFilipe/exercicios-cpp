@@ -139,6 +139,12 @@ void Lutador::desenharBarra() {
     << " MANA: " << mana << "/" << mana_maxima << "\n";
 }
 
-void Lutador::ganharOuro(size_t quantidade) {
-    ouro += quantidade;
-}
+void Lutador::ganharOuro(size_t quantidade) { ouro += quantidade;}
+
+void Lutador::diminuirOuro(size_t quantidade) { ouro -= quantidade; }
+
+void Lutador::aumentarPocao() { pocao_vida += 1; }
+
+void Lutador::aumentarDano() { dano += 5; }
+
+void Lutador::aumentarVidaMaxima() { vida_maxima += 10; }
