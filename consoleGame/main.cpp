@@ -1,107 +1,142 @@
 #include <iostream>
-#include <cstdlib> 
-#include <ctime>   
-#include <limits>  
-#include <string>  
-#include "Lutador.h" 
+#include <cstdlib> // rand, srand, system
+#include <ctime>   // time
+#include <limits>  // numeric_limits
+#include <string>  // to_string
 
-/* ### Melhorias
-    adicionar randoms names para os viloes
-    tirar mana do vilao, ele nao precisa
-*/
+// IMPORTANTE: Incluimos as classes novas
+#include "Heroi.h" 
+#include "Inimigo.h"
 
-// Função auxiliar para limpar tela cross-platform
+// Protótipos das funções auxiliares
 void limparTela();
-void menuLoja(Lutador &l);
+void menuLoja(Heroi &h); // Note que a loja recebe especificamente um Heroi
 
 int main() {
+    // 1. Inicializa o gerador de números aleatórios
     srand(time(0));
 
-    std::string NomeJogador;
-    std::cout << "Digite o nome do seu lutador: ";
-    std::getline(std::cin, NomeJogador);
+    // 2. Criação do Jogador
+    std::string nomeJogador;
+    std::cout << "Digite o nome do seu heroi: ";
+    std::getline(std::cin, nomeJogador);
     
-    Lutador heroi(NomeJogador, 150, 40, 150, 3);
+    // Instancia o Herói (Nome, Vida, Dano, Mana)
+    Heroi heroi(nomeJogador, 150, 40, 100); 
+    
     int round = 1;
 
-    while(heroi.getVida() > 0) {
-        // Banco de nomes e adjetivos
+    // --- LOOP PRINCIPAL DO JOGO (WAR LOOP) ---
+    // O método 'estaVivo()' vem da classe base Personagem
+    while(heroi.estaVivo()) { 
+        
+        // 3. Geração Aleatória de Inimigo
         std::string tipos[] = {"Orc", "Goblin", "Esqueleto", "Troll", "Fantasma", "Slime"};
         std::string adjetivos[] = {"Furioso", "Nojento", "Maldito", "Gigante", "Caolho", "Vingativo"};
-
-        // Sorteia um índice aleatório baseado no tamanho do array
-        // (rand() % 6) vai gerar um número entre 0 e 5
-        std::string tipoSorteado = tipos[rand() % 6];
-        std::string adjetivoSorteado = adjetivos[rand() % 6];
-
-        std::string nomeVilao = tipoSorteado + " " + adjetivoSorteado + " (Nvl " + std::to_string(round) + ")";
-        size_t vidaVilao = 80 + (round * 20);
-        size_t danoVilao = 10 + (round * 5);
         
-        Lutador vilao(nomeVilao, vidaVilao, danoVilao, vidaVilao);
+        std::string nomeVilao = tipos[rand() % 6] + " " + adjetivos[rand() % 6] + " (Nvl " + std::to_string(round) + ")";
+        
+        // Escalonamento de dificuldade (Inimigos ficam mais fortes a cada round)
+        int vidaVilao = 80 + (round * 20);
+        int danoVilao = 10 + (round * 5);
+        
+        // Instancia um Inimigo
+        Inimigo vilao(nomeVilao, vidaVilao, danoVilao);
 
+        // Introdução da Batalha
         std::cout << "\n>>> ROUND " << round << " <<<\n";
-        std::cout << "Pressione ENTER...";
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpeza inicial
-        std::cin.get();
+        std::cout << "Um " << vilao.getNome() << " apareceu!\n";
+        std::cout << "Pressione ENTER para lutar...";
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa buffer se tiver lixo
+        std::cin.get(); // Espera Enter
 
-        while(vilao.getVida() > 0 && heroi.getVida() > 0) {
+        // --- LOOP DE BATALHA (BATTLE LOOP) ---
+        while(vilao.estaVivo() && heroi.estaVivo()) {
             limparTela();
             
+            // UI: Desenha as barras
             std::cout << "--- ROUND " << round << " ---\n";
-            heroi.desenharBarra();
-            vilao.desenharBarra();
+            heroi.desenharBarra(); // Desenha Vida + Mana (Override do Heroi)
+            vilao.desenharBarra(); // Desenha só Vida (Padrão do Personagem)
 
-            std::cout << "Faca sua jogada: \n";
-            std::cout << "[1] Atacar  [2] Curar [3] Especiais\nEscolha: ";
+            // Turno do Jogador
+            std::cout << "\nFaca sua jogada: \n";
+            std::cout << "[1] Atacar  [2] Curar  [3] Habilidades\nEscolha: ";
+            
             int escolha;
             std::cin >> escolha;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o Enter do buffer
 
-            if (escolha == 1) heroi.atacar(vilao);
-            else if (escolha == 2) heroi.curar();
+            // Processa Escolha
+            if (escolha == 1) {
+                // POLIMORFISMO EM AÇÃO:
+                // O método atacar pede um 'Personagem', e 'vilao' É UM 'Personagem'.
+                heroi.atacar(vilao); 
+            }
+            else if (escolha == 2) {
+                heroi.curar();
+            }
             else if (escolha == 3) {
-                std::cout << "Escolha Habilidade: [1] Ataque Pesado (30 MP) [2] Drenar Vida (50 MP)\n";
-                int habilidade;
-                std::cin >> habilidade;
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
+                std::cout << "Escolha Habilidade: [1] Golpe Pesado (30 MP) [2] Drenar Vida (50 MP)\nOpcao: ";
+                int hab;
+                std::cin >> hab;
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-                if (habilidade == 1) heroi.ataqueEspecial(vilao);
-                else if (habilidade == 2) heroi.drenarVida(vilao);
-                else std::cout << "Habilidade inexistente.\n";
+                if (hab == 1) heroi.ataqueEspecial(vilao);
+                else if (hab == 2) heroi.drenarVida(vilao);
+                else std::cout << "Habilidade cancelada.\n";
             }
-            else std::cout << "Opcao invalida! Perdeu a vez.\n";
-
-            if (vilao.getVida() == 0) {
-                std::cout << "\nVOCE VENCEU O ROUND!\n";
-                break; 
+            else {
+                std::cout << "Voce tropeçou e perdeu a vez!\n";
             }
 
+            // Verifica Vitória Imediata
+            if (!vilao.estaVivo()) {
+                std::cout << "\n>>> VOCE VENCEU O INIMIGO! <<<\n";
+                break; // Sai do loop de batalha
+            }
+
+            // Turno do Inimigo
             std::cout << "\nTurno do inimigo...\n";
-            vilao.atacar(heroi);
+            vilao.atacar(heroi); // Inimigo ataca Herói
 
-            if (heroi.getVida() == 0) {
-                std::cout << "\nVOCE MORREU!\n";
-                break;
+            // Verifica Derrota Imediata
+            if (!heroi.estaVivo()) {
+                std::cout << "\n>>> VOCE FOI DERROTADO! <<<\n";
+                break; // Sai do loop de batalha
             }
 
-            std::cout << "\n(Enter para continuar)";
+            std::cout << "\n(Pressione ENTER para proximo turno)";
             std::cin.get();
         }
 
-        if (heroi.getVida() > 0) {
-            heroi.ganharOuro((rand() % 50) + 20);
-            std::cout << "\nVoce ganhou ouro! Total de Ouro: " << heroi.getOuro() << "\n";  
+        // --- PÓS-BATALHA ---
+        if (heroi.estaVivo()) {
+            // Recompensa
+            int ouroGanho = (rand() % 50) + 20;
+            heroi.ganharOuro(ouroGanho);
+            std::cout << "\nVoce saqueou " << ouroGanho << " de ouro do monstro.\n";
+            
+            // Loja
+            std::cout << "Pressione ENTER para visitar a loja...";
+            std::cin.get();
             menuLoja(heroi);
+
+            // Prepara próximo round
             round++;
         } else {
-            std::cout << "\n=== FIM DE JOGO ===\n";
-            std::cout << "Voce chegou ao Round " << round << "\n";
+            // Fim de Jogo
+            std::cout << "\n=============================\n";
+            std::cout << " FIM DE JOGO\n";
+            std::cout << " Heroi: " << heroi.getNome() << "\n";
+            std::cout << " Alcancou o Round: " << round << "\n";
+            std::cout << "=============================\n";
         }
     }
     return 0;
 }
 
+// Implementação da função Limpar Tela
 void limparTela() {
     #ifdef _WIN32
         system("cls");
@@ -110,73 +145,66 @@ void limparTela() {
     #endif
 }
 
-void menuLoja(Lutador &l){
+// Implementação do Menu da Loja
+void menuLoja(Heroi &h) {
     bool sair = false;
-    do
-    {
-        std::cout << "--- LOJA DO GOBLIN ---\n";
-        std::cout << "Seu ouro: " << l.getOuro() << "\n";
-        std::cout << "[1] Poção de Vida (50 ouro)\n";
-        std::cout << "[2] Afiar Espada (+5 Dano) (100 ouro)\n";
-        std::cout << "[3] Armadura Nova (+10 Vida Max) (150 ouro)\n";
-        std::cout << "[4] Sair e Lutar\n";
-        std::cout << "Digite uma opcao: ";
-
-        size_t op {0};
-        std::cin >> op;
-        switch (op)
-        {
-        case 1:
-            if(l.getOuro() < 50){
-                std::cout << "Ouro insuficiente!\n";
-                break;
-            }
-            l.aumentarPocao();
-            l.diminuirOuro(50);
-            std::cout << "Voce comprou uma pocao de vida! Total de pocoes: " << l.getPocaoVida() << "\n";
-            std::cout << "Gastou 50 de ouro. Ouro restante: " << l.getOuro() << "\n";
-
-            break;
-
-        case 2:
-            if(l.getOuro() < 100){
-                std::cout << "Ouro insuficiente!\n";
-                break;
-            }
-            l.aumentarDano();
-            l.diminuirOuro(100);
-
-            std::cout << "Voce aumentou seu dano em 5 pontos!\n";
-            std::cout << "Dano atual: " << l.getDano() << "\n";
-            std::cout << "Gastou 100 de ouro. Ouro restante: " << l.getOuro() << "\n";
-
-            break;
-
-        case 3:
-            if(l.getOuro() < 150){
-                std::cout << "Ouro insuficiente!\n";
-                break;
-            }
-            l.aumentarVidaMaxima();
-            l.diminuirOuro(150);
-
-            std::cout << "Voce aumentou sua vida maxima em 10 pontos!\n";
-            std::cout << "Vida Maxima atual: " << l.getVidaMaxima() << "\n";
-            std::cout << "Gastou 150 de ouro. Ouro restante: " << l.getOuro() << "\n";
-
-            break;  
-
-        case 4:
-            std::cout << "Saindo da loja...\n";
-            sair = true;
-
-            break;
+    do {
+        limparTela();
+        std::cout << "=== LOJA DO GOBLIN ===\n";
+        std::cout << "Seu Ouro: " << h.getOuro() << "\n";
+        std::cout << "Seus Stats: Vida Max " << h.getVidaMaxima() << " | Dano " << h.getDano() << "\n\n";
         
-        default: 
-            std::cout << "Opcao invalida\n";
-            break;
-        }
-    } while (!sair);
+        std::cout << "[1] Pocao de Vida (50g)  - Atual: " << h.getPocaoVida() << "\n";
+        std::cout << "[2] Afiar Espada  (100g) - +5 Dano\n";
+        std::cout << "[3] Armadura Nova (150g) - +10 Vida Max\n";
+        std::cout << "[4] Sair e Lutar\n";
+        std::cout << "Escolha: ";
 
-    return;
+        int op;
+        std::cin >> op;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        switch (op) {
+            case 1:
+                if (h.getOuro() >= 50) {
+                    h.diminuirOuro(50);
+                    h.aumentarPocao();
+                    std::cout << "Voce comprou uma Pocao!\n";
+                } else std::cout << "Ouro insuficiente!\n";
+                break;
+            
+            case 2:
+                if (h.getOuro() >= 100) {
+                    h.diminuirOuro(100);
+                    // AumentarDano é um método da classe base Personagem, 
+                    // mas como Heroi herda dela, funciona perfeitamente!
+                    h.aumentarDano(5); 
+                    std::cout << "Sua espada esta mais afiada!\n";
+                } else std::cout << "Ouro insuficiente!\n";
+                break;
+
+            case 3:
+                if (h.getOuro() >= 150) {
+                    h.diminuirOuro(150);
+                    // Mesma coisa aqui, método herdado de Personagem
+                    h.aumentarVidaMaxima(10); 
+                    std::cout << "Sua armadura brilha mais forte!\n";
+                } else std::cout << "Ouro insuficiente!\n";
+                break;
+
+            case 4:
+                sair = true;
+                std::cout << "Voltando para a arena...\n";
+                break;
+
+            default:
+                std::cout << "Opcao invalida!\n";
+        }
+
+        if(!sair) {
+            std::cout << "(Enter para continuar na loja)";
+            std::cin.get();
+        }
+
+    } while (!sair);
 }
