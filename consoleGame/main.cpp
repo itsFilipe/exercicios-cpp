@@ -6,7 +6,6 @@
 #include "Lutador.h" 
 
 /* ### Melhorias
-    melhorias, criar classes na heap com memoria dinamica
     adicionar randoms names para os viloes
     tirar mana do vilao, ele nao precisa
 */
@@ -26,7 +25,16 @@ int main() {
     int round = 1;
 
     while(heroi.getVida() > 0) {
-        std::string nomeVilao = "Vilao Nivel " + std::to_string(round);
+        // Banco de nomes e adjetivos
+        std::string tipos[] = {"Orc", "Goblin", "Esqueleto", "Troll", "Fantasma", "Slime"};
+        std::string adjetivos[] = {"Furioso", "Nojento", "Maldito", "Gigante", "Caolho", "Vingativo"};
+
+        // Sorteia um índice aleatório baseado no tamanho do array
+        // (rand() % 6) vai gerar um número entre 0 e 5
+        std::string tipoSorteado = tipos[rand() % 6];
+        std::string adjetivoSorteado = adjetivos[rand() % 6];
+
+        std::string nomeVilao = tipoSorteado + " " + adjetivoSorteado + " (Nvl " + std::to_string(round) + ")";
         size_t vidaVilao = 80 + (round * 20);
         size_t danoVilao = 10 + (round * 5);
         
