@@ -5,6 +5,12 @@
 #include <string>  
 #include "Lutador.h" 
 
+/* ### Melhorias
+    melhorias, criar classes na heap com memoria dinamica
+    adicionar randoms names para os viloes
+    tirar mana do vilao, ele nao precisa
+*/
+
 // Função auxiliar para limpar tela cross-platform
 void limparTela();
 void menuLoja(Lutador &l);
