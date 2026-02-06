@@ -7,13 +7,13 @@
 // IMPORTANTE: Incluimos as classes novas
 #include "Heroi.h" 
 #include "Inimigo.h"
+#include "Vampiro.h"
 
 // Protótipos das funções auxiliares
 void limparTela();
-void menuLoja(Heroi &h); // Note que a loja recebe especificamente um Heroi
+void menuLoja(Heroi &h); 
 
 int main() {
-    // 1. Inicializa o gerador de números aleatórios
     srand(time(0));
 
     // 2. Criação do Jogador
@@ -21,57 +21,61 @@ int main() {
     std::cout << "Digite o nome do seu heroi: ";
     std::getline(std::cin, nomeJogador);
     
-    // Instancia o Herói (Nome, Vida, Dano, Mana)
+    // Instancia o Herói
     Heroi heroi(nomeJogador, 150, 40, 100); 
     
     int round = 1;
 
-    // --- LOOP PRINCIPAL DO JOGO (WAR LOOP) ---
-    // O método 'estaVivo()' vem da classe base Personagem
+    // --- LOOP PRINCIPAL DO JOGO ---
     while(heroi.estaVivo()) { 
         
-        // 3. Geração Aleatória de Inimigo
-        std::string tipos[] = {"Orc", "Goblin", "Esqueleto", "Troll", "Fantasma", "Slime"};
-        std::string adjetivos[] = {"Furioso", "Nojento", "Maldito", "Gigante", "Caolho", "Vingativo"};
-        
-        std::string nomeVilao = tipos[rand() % 6] + " " + adjetivos[rand() % 6] + " (Nvl " + std::to_string(round) + ")";
-        
-        // Escalonamento de dificuldade (Inimigos ficam mais fortes a cada round)
-        int vidaVilao = 80 + (round * 20);
-        int danoVilao = 10 + (round * 5);
-        
-        // Instancia um Inimigo
-        Inimigo vilao(nomeVilao, vidaVilao, danoVilao);
+        // Ponteiro Polimórfico: Pode apontar para Inimigo OU Vampiro
+        Personagem *vilao = nullptr; 
+
+        // Sorteio: 20% de chance de ser Vampiro
+        if ((rand() % 100) < 20) { 
+            // O construtor do Vampiro já define nome e stats baseado no round
+            vilao = new Vampiro(round); 
+        } else {
+            // Caso contrário, gera um Inimigo comum manualmente
+            std::string tipos[] = {"Orc", "Goblin", "Esqueleto", "Troll", "Fantasma", "Slime"};
+            std::string adjetivos[] = {"Furioso", "Nojento", "Maldito", "Gigante", "Caolho", "Vingativo"};
+            
+            std::string nomeVilao = tipos[rand() % 6] + " " + adjetivos[rand() % 6] + " (Nvl " + std::to_string(round) + ")";
+            int vidaVilao = 80 + (round * 20);
+            int danoVilao = 10 + (round * 5);
+            
+            vilao = new Inimigo(nomeVilao, vidaVilao, danoVilao);
+        }
 
         // Introdução da Batalha
         std::cout << "\n>>> ROUND " << round << " <<<\n";
-        std::cout << "Um " << vilao.getNome() << " apareceu!\n";
+        // IMPORTANTE: Usamos '->' pois vilao é um ponteiro
+        std::cout << "Um " << vilao->getNome() << " apareceu!\n"; 
         std::cout << "Pressione ENTER para lutar...";
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa buffer se tiver lixo
-        std::cin.get(); // Espera Enter
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cin.get(); 
 
-        // --- LOOP DE BATALHA (BATTLE LOOP) ---
-        while(vilao.estaVivo() && heroi.estaVivo()) {
+        // --- LOOP DE BATALHA ---
+        while(vilao->estaVivo() && heroi.estaVivo()) {
             limparTela();
             
-            // UI: Desenha as barras
             std::cout << "--- ROUND " << round << " ---\n";
-            heroi.desenharBarra(); // Desenha Vida + Mana (Override do Heroi)
-            vilao.desenharBarra(); // Desenha só Vida (Padrão do Personagem)
+            heroi.desenharBarra(); 
+            vilao->desenharBarra(); // Polimorfismo: Se for Vampiro, usa a barra do Vampiro (se tiver override)
 
-            // Turno do Jogador
             std::cout << "\nFaca sua jogada: \n";
             std::cout << "[1] Atacar  [2] Curar  [3] Habilidades\nEscolha: ";
             
             int escolha;
             std::cin >> escolha;
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Limpa o Enter do buffer
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
 
             // Processa Escolha
             if (escolha == 1) {
-                // POLIMORFISMO EM AÇÃO:
-                // O método atacar pede um 'Personagem', e 'vilao' É UM 'Personagem'.
-                heroi.atacar(vilao); 
+                // IMPORTANTE: 'heroi.atacar' pede uma Referência (&).
+                // Como 'vilao' é ponteiro, usamos '*' para pegar o objeto real.
+                heroi.atacar(*vilao); 
             }
             else if (escolha == 2) {
                 heroi.curar();
@@ -82,8 +86,8 @@ int main() {
                 std::cin >> hab;
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-                if (hab == 1) heroi.ataqueEspecial(vilao);
-                else if (hab == 2) heroi.drenarVida(vilao);
+                if (hab == 1) heroi.ataqueEspecial(*vilao); // Use *vilao
+                else if (hab == 2) heroi.drenarVida(*vilao); // Use *vilao
                 else std::cout << "Habilidade cancelada.\n";
             }
             else {
@@ -91,41 +95,42 @@ int main() {
             }
 
             // Verifica Vitória Imediata
-            if (!vilao.estaVivo()) {
+            if (!vilao->estaVivo()) {
                 std::cout << "\n>>> VOCE VENCEU O INIMIGO! <<<\n";
-                break; // Sai do loop de batalha
+                break; 
             }
 
             // Turno do Inimigo
             std::cout << "\nTurno do inimigo...\n";
-            vilao.atacar(heroi); // Inimigo ataca Herói
+            // Polimorfismo Mágico: Se for Vampiro, chama o atacar() do Vampiro (que rouba vida)
+            vilao->atacar(heroi); 
 
             // Verifica Derrota Imediata
             if (!heroi.estaVivo()) {
                 std::cout << "\n>>> VOCE FOI DERROTADO! <<<\n";
-                break; // Sai do loop de batalha
+                break; 
             }
 
             std::cout << "\n(Pressione ENTER para proximo turno)";
             std::cin.get();
         }
 
+        // --- LIMPEZA DE MEMÓRIA (CRUCIAL EM C++) ---
+        delete vilao; // Destrói o objeto criado com 'new'
+        vilao = nullptr; // Boa prática para evitar ponteiros soltos
+
         // --- PÓS-BATALHA ---
         if (heroi.estaVivo()) {
-            // Recompensa
             int ouroGanho = (rand() % 50) + 20;
             heroi.ganharOuro(ouroGanho);
-            std::cout << "\nVoce saqueou " << ouroGanho << " de ouro do monstro.\n";
+            std::cout << "\nVoce saqueou " << ouroGanho << " de ouro.\n";
             
-            // Loja
             std::cout << "Pressione ENTER para visitar a loja...";
             std::cin.get();
             menuLoja(heroi);
 
-            // Prepara próximo round
             round++;
         } else {
-            // Fim de Jogo
             std::cout << "\n=============================\n";
             std::cout << " FIM DE JOGO\n";
             std::cout << " Heroi: " << heroi.getNome() << "\n";
