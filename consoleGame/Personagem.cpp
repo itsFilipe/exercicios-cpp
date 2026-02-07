@@ -47,3 +47,9 @@ void Personagem::desenharBarra() {
 
 void Personagem::aumentarVidaMaxima(int qtd) { vidaMaxima += qtd; vida += qtd; }
 void Personagem::aumentarDano(int qtd) { danoBase += qtd; }
+
+void Personagem::receberCura(int quantidade) {
+    vida += quantidade;
+    if (vida > vidaMaxima) vida = vidaMaxima;
+    std::cout << "\033[32m" << nome << " recuperou " << quantidade << " de vida!\033[0m\n";
+}

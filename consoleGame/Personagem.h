@@ -30,6 +30,7 @@ public:
     // Setter necessário para o Heroi aumentar vida na loja
     void aumentarVidaMaxima(int qtd);
     void aumentarDano(int qtd);
+    void receberCura(int quantidade);
 };
 
 #endif
