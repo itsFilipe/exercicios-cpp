@@ -8,8 +8,8 @@ class robo {
 public:
     robo(int x = 1, int y = 1); 
 
-    int getX() { return x; };
-    int getY() { return y; };
+    int getX() const { return x; };
+    int getY() const { return y; };
 
     bool tentar_mover(char comando, std::vector<std::vector<int>>& mapa); ///???
 };

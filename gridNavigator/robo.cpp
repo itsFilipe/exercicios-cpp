@@ -11,10 +11,10 @@ bool robo::tentar_mover(char comando, std::vector<std::vector<int>>& mapa) {
     int aux_y = y;
 
     switch (comando) {
-            case 'W': aux_y--; break;
-            case 'S': aux_y++; break;
-            case 'A': aux_x--; break;
-            case 'D': aux_x++; break;
+            case 'W': aux_x--; break;
+            case 'S': aux_x++; break;
+            case 'A': aux_y--; break;
+            case 'D': aux_y++; break;
             default: return false; // Comando inválido
         }
 
