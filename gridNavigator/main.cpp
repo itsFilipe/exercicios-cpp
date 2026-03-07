@@ -1,12 +1,13 @@
 #include <iostream>
+#include <cstdlib>
 #include "robo.h"
 
 void renderizar_mapa(std::vector<std::vector<int>>& mapa, const robo& r);
+void nova_fruta(std::vector<std::vector<int>>& mapa);
 bool pegar_fruta(std::vector<std::vector<int>>& mapa, const robo& r);
 void limpar_tela();
 
 int main() {
-
     robo meu_robo; //ja esta instanciado com o construtor padrao, entao x=1 e y=1
 
     std::cout << meu_robo.getX() << std::endl;
@@ -25,8 +26,6 @@ int main() {
         {1, 1, 1, 1, 1, 1, 1, 1, 2, 1}
     };
 
-    
-
     char comando;
     bool rodando = true;
 
@@ -44,12 +43,21 @@ int main() {
 
         meu_robo.tentar_mover(comando, mapa);
 
-        if(pegar_fruta(mapa, meu_robo)){
+        if(pegar_fruta(mapa, meu_robo)){ //for some reason this if is being always true, i need to analyse... 20260306
             std::cout << "O robo comeu a fruta!!!" << std::endl;
-            rodando = false;
+            //rodando = false;
+
+            std::cout << "Deseja que o robo se alimente mais? S / N" << std::endl;
+            char inp;
+            std::cin >> inp;
+            inp = toupper(inp);
+            if(inp == 'S'){
+                nova_fruta(mapa);
+            } else {
+                rodando = false;
+            }
         }
     }
-
 
     return 0;
 }
@@ -89,6 +97,7 @@ bool pegar_fruta(std::vector<std::vector<int>>& mapa, const robo& r){
                 //aux_j = j;
 
                 if(i == rx && j == ry)
+                    mapa[i][j] = 0;
                     return true;
             }
         }
@@ -104,3 +113,13 @@ void limpar_tela() {
         system("clear");
     #endif
 }
+
+void nova_fruta(std::vector<std::vector<int>>& mapa){
+    srand(time(0));
+    int rnd_num_x = rand() % mapa[0].size();
+    int rnd_num_y = rand() % mapa.size();
+
+    if(mapa[rnd_num_x][rnd_num_y] == 0)
+        mapa[rnd_num_x][rnd_num_y] = 2;
+}
+
