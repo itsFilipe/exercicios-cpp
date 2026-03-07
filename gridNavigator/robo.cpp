@@ -22,7 +22,7 @@ bool robo::tentar_mover(char comando, std::vector<std::vector<int>>& mapa) {
         necessario checar se passou dos limites
     */
 
-    /* mapa.size() retorna o tamanho da coluna e mapa[0].size retorna linhas? estude sobre */
+    /* mapa.size() retorna o tamanho das linhas  e mapa[0].size retorna colunas*/
 
     if (aux_y < 0 || aux_y >= mapa.size() || 
             aux_x < 0 || aux_x >= mapa[0].size()) {

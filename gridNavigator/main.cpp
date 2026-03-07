@@ -8,6 +8,7 @@ bool pegar_fruta(std::vector<std::vector<int>>& mapa, const robo& r);
 void limpar_tela();
 
 int main() {
+    srand(time(0));
     robo meu_robo; //ja esta instanciado com o construtor padrao, entao x=1 e y=1
 
     std::cout << meu_robo.getX() << std::endl;
@@ -43,9 +44,8 @@ int main() {
 
         meu_robo.tentar_mover(comando, mapa);
 
-        if(pegar_fruta(mapa, meu_robo)){ //for some reason this if is being always true, i need to analyse... 20260306
+        if(pegar_fruta(mapa, meu_robo)){ 
             std::cout << "O robo comeu a fruta!!!" << std::endl;
-            //rodando = false;
 
             std::cout << "Deseja que o robo se alimente mais? S / N" << std::endl;
             char inp;
@@ -88,17 +88,13 @@ bool pegar_fruta(std::vector<std::vector<int>>& mapa, const robo& r){
     rx = r.getX();
     ry = r.getY();
 
-    //int aux_i, aux_j;
-
     for(size_t i = 0; i < mapa.size() ; i++){
         for(size_t j = 0; j < mapa[i].size() ; j++){
             if(mapa[i][j] == 2){
-                //aux_i = i;
-                //aux_j = j;
-
-                if(i == rx && j == ry)
+                if(i == rx && j == ry){
                     mapa[i][j] = 0;
                     return true;
+                }
             }
         }
     }
@@ -114,12 +110,24 @@ void limpar_tela() {
     #endif
 }
 
+/*
+    possivel melhoria nessa funcao, em vez de ser probabilistico, ser deterministico, ou seja
+    em vez de percorrer tudo e gerar posicao aleatoria, tendo que ter condicao, varre o mapa e
+    guarda apenas as solucoes possiveis, e nisso gera indices aleatorios entre essas solucoes
+    Nao le o mapa a todo momento, apenas 1 vez o(n)
+*/
+
 void nova_fruta(std::vector<std::vector<int>>& mapa){
-    srand(time(0));
-    int rnd_num_x = rand() % mapa[0].size();
-    int rnd_num_y = rand() % mapa.size();
+    bool position_not_ok = true;
+    int rnd_numx, rnd_numy;
 
-    if(mapa[rnd_num_x][rnd_num_y] == 0)
-        mapa[rnd_num_x][rnd_num_y] = 2;
+    while (position_not_ok) {
+        rnd_numx = rand() % mapa.size();
+        rnd_numy = rand() % mapa[0].size();
+
+         if(mapa[rnd_numx][rnd_numy] == 0){
+            mapa[rnd_numx][rnd_numy] = 2;
+            position_not_ok = false;
+        } 
+    }
 }
-
