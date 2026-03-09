@@ -7,6 +7,16 @@ void nova_fruta(std::vector<std::vector<int>>& mapa);
 bool pegar_fruta(std::vector<std::vector<int>>& mapa, const robo& r);
 void limpar_tela();
 
+struct Ponto {
+    size_t x, y;
+};
+
+/*  
+    Proximas melhorias, implementar funcao em que o robo encontra o caminho
+    mais curto p fruta, por meio de algoritmo de busca, como bfs ou a* por exemplo, e o robo se move automaticamente
+    para a fruta, e quando chegar na fruta, o processo se repete, gerando nova fruta e o robo se movendo novamente
+*/
+
 int main() {
     srand(time(0));
     robo meu_robo; //ja esta instanciado com o construtor padrao, entao x=1 e y=1
@@ -114,20 +124,30 @@ void limpar_tela() {
     possivel melhoria nessa funcao, em vez de ser probabilistico, ser deterministico, ou seja
     em vez de percorrer tudo e gerar posicao aleatoria, tendo que ter condicao, varre o mapa e
     guarda apenas as solucoes possiveis, e nisso gera indices aleatorios entre essas solucoes
-    Nao le o mapa a todo momento, apenas 1 vez o(n)
+    Nao le o mapa a todo momento, apenas 1 vez o(n) -- OK!
 */
 
 void nova_fruta(std::vector<std::vector<int>>& mapa){
-    bool position_not_ok = true;
-    int rnd_numx, rnd_numy;
+    std::vector<Ponto> lista_cord_ok;
 
-    while (position_not_ok) {
-        rnd_numx = rand() % mapa.size();
-        rnd_numy = rand() % mapa[0].size();
-
-         if(mapa[rnd_numx][rnd_numy] == 0){
-            mapa[rnd_numx][rnd_numy] = 2;
-            position_not_ok = false;
-        } 
+    for(size_t i = 0; i < mapa.size() ; i++){
+        for(size_t j = 0; j < mapa[i].size() ; j++){
+            if(mapa[i][j] == 0){ //guardando coordenadas possiveis
+                lista_cord_ok.push_back({i,j}); 
+            }
+        }
     }
+    
+    if (lista_cord_ok.size() == 0){
+        std::cout << "Nao tem mais lugar para colocar a fruta, parabens voce venceu o jogo!!!" << std::endl;
+        return;
+    }
+
+    int indice_random;
+    indice_random = rand() % lista_cord_ok.size();
+
+    auto p = lista_cord_ok.at(indice_random);
+    mapa[p.x][p.y] = 2;
 }
+
+
