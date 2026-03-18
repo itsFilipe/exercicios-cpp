@@ -1,14 +1,22 @@
 #include <iostream>
 #include <cstdlib>
+#include <queue>
+
 #include "robo.h"
 
 void renderizar_mapa(std::vector<std::vector<int>>& mapa, const robo& r);
 void nova_fruta(std::vector<std::vector<int>>& mapa);
+void encontra_caminho(std::vector<std::vector<int>>& mapa, Ponto começo, Ponto fruta);
 bool pegar_fruta(std::vector<std::vector<int>>& mapa, const robo& r);
 void limpar_tela();
 
 struct Ponto {
     size_t x, y;
+
+    // Sobrecarga do operador de igualdade para facilitar a comparação 
+    bool operator==(const Ponto& other) const {
+        return x == other.x && y == other.y;
+    }
 };
 
 /*  
@@ -150,4 +158,60 @@ void nova_fruta(std::vector<std::vector<int>>& mapa){
     mapa[p.x][p.y] = 2;
 }
 
+void encontra_caminho(std::vector<std::vector<int>>& mapa, Ponto comeco, Ponto alvo){
+
+    int rows = mapa.size();
+    int col  = mapa[0].size();
+
+    //primeiro criar espelho
+    std::vector<std::vector<bool>> passou(rows, std::vector<bool>(col, false));
+
+    //auxiliares para encontrar vizinhos
+    int dr[] = {-1, 1, 0, 0}; //sobe, desce
+    int dc[] = { 0, 0,-1, 1}; //esquerda, direita
+
+    //crio fila, insiro o ponto inicial, marco como passou
+    std::queue<Ponto> q;
+    q.push(comeco);
+    passou[comeco.x][comeco.y] = true;
+    bool encontrou = false;
+
+    while (!q.empty()) //enqt nao estiver vazia
+    {
+        //Pega elemento e encontra vizinhos
+
+        Ponto atual = q.front();
+        q.pop();
+
+        // Condição de sucesso
+        if (atual == alvo) {
+            encontrou = true;
+            break;
+        }
+
+        //atinge vizinhos, valida e insere na fila
+        for(size_t i = 0; i < 4; i++){
+            int nova_r = atual.x + dr[i];
+            int nova_c = atual.y + dc[i];
+
+            //validar de ponto esta dentro dos limites, nao foi visitado, e nao é parede..
+            if(nova_r >= 0 && nova_r <= rows && nova_c >= 0 && nova_c <= col && !passou[nova_r][nova_c] && mapa[nova_r][nova_c] != 1){
+
+                passou[nova_r][nova_c] = true;
+
+                Ponto aux;
+                aux.x = nova_r;
+                aux.y = nova_c;
+
+                q.push(aux);
+            }
+        }
+    }
+    
+    /* 
+    a duvida que tenho no momento, vou encontrar o caminho, ok, mas eu vou ter que
+    salvar ele, porque vou ter que aplicar esse caminho pro meu robo execeutar, certo? 
+    */
+
+}
 
