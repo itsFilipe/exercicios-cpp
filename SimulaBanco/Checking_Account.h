@@ -4,8 +4,6 @@
 #include "Account.h"
 
 class Checking_Account : public Account {
-    friend std::ostream &operator<<(std::ostream &os, const Checking_Account &account);
-    
     private:
         static constexpr const char *def_name = "Unnamed Checking Account";
         static constexpr double def_balance = 0.0;
@@ -15,7 +13,11 @@ class Checking_Account : public Account {
     public:
 
     Checking_Account(std::string n = def_name, double b = def_balance, double f = def_fee);
-    bool withdraw(double amount); //cada retirada tem taxa de 1.50
+
+    virtual bool withdraw(double amount) override; //cada retirada tem taxa de 1.50
+    virtual void print(std::ostream &os) const override; 
+
+    virtual ~Checking_Account() = default;
 };
 
 #endif

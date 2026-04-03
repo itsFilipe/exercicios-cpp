@@ -14,52 +14,35 @@ int main() {
     cout << fixed;
    
     // Accounts
-    vector<Account> accounts;
-    accounts.push_back(Account {});
-    accounts.push_back(Account {"Larry"});
-    accounts.push_back(Account {"Moe", 2000} );
-    accounts.push_back(Account {"Curly", 5000} );
+    vector<Account *> accounts;
+    accounts.push_back(new Account {});
+    accounts.push_back(new Account {"Larry"});
+    accounts.push_back(new Account {"Moe", 2000} );
+    accounts.push_back(new Account {"Curly", 5000} );
     
+    accounts.push_back(new Savings_Account {} );
+    accounts.push_back(new Savings_Account {"Superman"} );
+    accounts.push_back(new Savings_Account {"Batman", 2000} );
+    accounts.push_back(new Savings_Account {"Wonderwoman", 5000, 5.0} );
+
+    accounts.push_back(new Checking_Account {} );
+    accounts.push_back(new Checking_Account {"Filipe"} );
+    accounts.push_back(new Checking_Account {"Bianka", 2000} );
+    accounts.push_back(new Checking_Account {"Scott", 5000, 50} );
+
+    accounts.push_back(new Trust_Account {} );
+    accounts.push_back(new Trust_Account {"Michael"} );
+    accounts.push_back(new Trust_Account {"Kelly", 2000} );
+    accounts.push_back(new Trust_Account {"Gabe", 5000, 0} );
+
     display(accounts);
     deposit(accounts, 1000);
     withdraw(accounts,2000);
-    
-    // Savings 
 
-    vector<Savings_Account> sav_accounts;
-    sav_accounts.push_back(Savings_Account {} );
-    sav_accounts.push_back(Savings_Account {"Superman"} );
-    sav_accounts.push_back(Savings_Account {"Batman", 2000} );
-    sav_accounts.push_back(Savings_Account {"Wonderwoman", 5000, 5.0} );
-
-    display(sav_accounts);
-    deposit(sav_accounts, 1000);
-    withdraw(sav_accounts, 2000);
-    
-    // Checkings
-
-    vector<Checking_Account> chk_counts;
-    chk_counts.push_back(Checking_Account {} );
-    chk_counts.push_back(Checking_Account {"Filipe"} );
-    chk_counts.push_back(Checking_Account {"Bianka", 2000} );
-    chk_counts.push_back(Checking_Account {"Scott", 5000, 50} );
-
-    display(chk_counts);
-    deposit(chk_counts, 1000);
-    withdraw(chk_counts, 2000);
-
-    // Trust
-
-    vector<Trust_Account> tst_counts;
-    tst_counts.push_back(Trust_Account {} );
-    tst_counts.push_back(Trust_Account {"Michael"} );
-    tst_counts.push_back(Trust_Account {"Kelly", 2000} );
-    tst_counts.push_back(Trust_Account {"Gabe", 5000, 0} );
-
-    display(tst_counts);
-    deposit(tst_counts, 5200);
-    withdraw(tst_counts, 2000);
-
+    for (auto acc : accounts) {
+        delete acc; 
+    }
+    accounts.clear(); 
 
     return 0;
 }
