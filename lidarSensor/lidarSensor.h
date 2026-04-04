@@ -3,6 +3,7 @@
 
 #include <random>
 #include <vector>
+#include <memory>
 
 class LidarSensor {
 private:
@@ -19,7 +20,8 @@ public:
         this->maxDistance = maxDistance;
     }
 
-    std::vector<int> ReadData();
+    //metodo vai retornar um ponteiro unico que aponta pra um vetor de inteiros
+    std::unique_ptr<std::vector<int>> ReadData();
 };
 
 #endif
