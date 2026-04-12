@@ -1,6 +1,7 @@
 #ifndef HEROI_H
 #define HEROI_H
 
+#include <memory>
 #include <vector>
 #include <string>
 #include <fstream> // Necessário para salvar arquivos
@@ -14,11 +15,11 @@ private:
     int mana;
     int manaMaxima;
     int ouro;
-    
-    // O Inventário Real!
-    std::vector<Item*> inventario;
+  
+    std::vector<std::unique_ptr<Item>> inventario;
 
 public:
+    Heroi(std::string n);
     Heroi(std::string n, int v, int d, int m);
     ~Heroi(); // Destrutor para limpar memória dos itens!
 
@@ -28,13 +29,16 @@ public:
     // Métodos Especiais
     void ataqueEspecial(Personagem &alvo);
     void drenarVida(Personagem &alvo);
+    void restaurarMana(int quantidade);
 
     // Gestão de Inventário
-    void adicionarItem(Item* novoItem);
+    //void adicionarItem(Item* novoItem);
+    void adicionarItem(std::unique_ptr<Item> novoItem);
     void usarItem(int indice);
     void mostrarInventario();
     int getTamanhoInventario() const; 
     void limparInventario(); // <--- NOVO: Necessário para o Load
+    std::vector<int> getInventarioIds() const;
 
     // Economia
     int getOuro() const { return ouro; }

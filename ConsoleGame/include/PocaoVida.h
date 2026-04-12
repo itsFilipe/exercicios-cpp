@@ -8,8 +8,8 @@ private:
     int cura;
 
 public:
-    PocaoVida(int quantidadeCura) 
-        : Item("Pocao de Vida", "Recupera HP"), cura(quantidadeCura) {}
+    PocaoVida(int id, std::string nome, std::string desc, int quantidadeCura) 
+        : Item(id, nome, desc), cura(quantidadeCura) {}
 
     void aplicar(Personagem* alvo) override {
         std::cout << "Usando " << nome << "...\n";

@@ -9,6 +9,10 @@
 #define YELLOW  "\033[33m"
 #define GREEN   "\033[32m"
 
+Heroi::Heroi(std::string n) 
+    : Heroi(n, 150, 40, 100) { 
+}
+
 Heroi::Heroi(std::string n, int v, int d, int m) 
     : Personagem(n, v, d), mana(m), manaMaxima(m), ouro(0) {
 }
@@ -63,11 +67,22 @@ void Heroi::drenarVida(Personagem &alvo) {
     std::cout << RED << "Drenou vida! Dano: " << danoReal << "\n" << RESET;
 }
 
+void Heroi::restaurarMana(int quantidade) {
+    mana += quantidade;
+    if(mana > manaMaxima) mana = manaMaxima;
+}
+
 // --- SISTEMA DE INVENTÁRIO ---
 
-void Heroi::adicionarItem(Item* novoItem) {
-    inventario.push_back(novoItem);
-    std::cout << "Item obtido: " << novoItem->getNome() << "!\n";
+void Heroi::adicionarItem(std::unique_ptr<Item> novoItem) { 
+    // Read the name FIRST while novoItem still owns the data
+    std::string nome = novoItem->getNome(); 
+    
+    // THEN move it
+    inventario.push_back(std::move(novoItem)); 
+    
+    // Print the saved string
+    std::cout << "Você pegou: " << nome << "\n";
 }
 
 void Heroi::mostrarInventario() {
@@ -88,11 +103,9 @@ void Heroi::usarItem(int indice) {
         return;
     }
 
-    Item* item = inventario[indice];
-    item->aplicar(this); 
-
+    std::unique_ptr<Item> item = std::move(inventario[indice]);
     inventario.erase(inventario.begin() + indice);
-    delete item;
+    item->aplicar(this); 
 }
 
 int Heroi::getTamanhoInventario() const {
@@ -100,10 +113,15 @@ int Heroi::getTamanhoInventario() const {
 }
 
 void Heroi::limparInventario() {
-    for (Item* item : inventario) {
-        delete item;
-    }
     inventario.clear();
+}
+
+std::vector<int> Heroi::getInventarioIds() const {
+    std::vector<int> ids;
+    for (const auto& item : inventario) {
+        ids.push_back(item->getId());
+    }
+    return ids;
 }
 
 // --- SISTEMA DE SAVE / LOAD ---

@@ -7,13 +7,15 @@
 
 class Item {
 protected:
+    int id;
     std::string nome;
     std::string descricao;
 
 public:
-    Item(std::string n, std::string desc) : nome(n), descricao(desc) {}
+    Item(int i, std::string n, std::string desc) : id(i), nome(n), descricao(desc) {}
     virtual ~Item() {} 
 
+    int getId() const { return id; }
     std::string getNome() const { return nome; }
     std::string getDescricao() const { return descricao; }
 
