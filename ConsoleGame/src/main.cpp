@@ -5,6 +5,9 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <functional>
+#include <thread> 
+#include <chrono> 
 
 #include "Heroi.h" 
 #include "Inimigo.h"
@@ -19,6 +22,14 @@ void limparTela();
 void menuLoja(Heroi &h); 
 void salvarJogo(Heroi &h, int round);
 bool carregarJogo(Heroi &h, int &round);
+
+struct LootBau {
+    std::string nome;
+    std::function<void()> acao; 
+};
+
+std::vector<LootBau> possiveisItens;
+
 
 int main() {
     srand(time(0));
@@ -39,6 +50,22 @@ int main() {
     }
     
     Heroi heroi(nomeJogador);
+
+    possiveisItens.push_back({
+        "Baú Misterioso: Poção Grande",
+        [&]() { 
+            std::cout << "Você abriu o baú e encontrou uma Pocao Grande!\n"; 
+            heroi.adicionarItem(std::make_unique<PocaoVida>(2, "Pocao Grande", "Recupera 100 HP", 100));
+        }
+    });
+
+    possiveisItens.push_back({
+        "Baú Misterioso: Poção de Mana",
+        [&]() { 
+            std::cout << "Dentro havia uma Pocao de Mana!\n";
+            heroi.adicionarItem(std::make_unique<PocaoMana>(3, "Pocao Mana", "Recupera 30 MP", 30));
+        }
+    });
 
     if (opInicial == 2) {
         if (carregarJogo(heroi, round)) {
@@ -130,12 +157,18 @@ int main() {
 
             if ((rand() % 100) < 30) {
                 std::cout << "\n*** VOCE ENCONTROU UM BAU MAGICO! ***\n";
-                if ((rand() % 2) == 0) {
-                    std::cout << "Dentro havia uma Pocao Grande!\n";
-                    heroi.adicionarItem(std::make_unique<PocaoVida>(2, "Pocao Grande", "Recupera 100 HP", 100));
+                std::cout << "Deseja abrir? (S - Sim)" << std::endl;
+                std::string escolha;
+                std::cin >> escolha;
+
+                if(!escolha.empty() && toupper(escolha[0]) == 'S'){ //??
+                    std::this_thread::sleep_for(std::chrono::milliseconds(800)); // Pequena pausa para suspense
+
+                    int sorteio = rand() % possiveisItens.size();
+                    possiveisItens[sorteio].acao(); // Executa o código específico daquele item!
+
                 } else {
-                    std::cout << "Dentro havia uma Pocao de Mana!\n";
-                    heroi.adicionarItem(std::make_unique<PocaoMana>(3, "Pocao Mana", "Recupera 30 MP", 30));
+                    std::cout << "Ok... siga seu caminho" << std::endl;
                 }
             }
 
