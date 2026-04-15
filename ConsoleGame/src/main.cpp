@@ -3,36 +3,88 @@
 #include <ctime>
 #include <limits>
 #include <string>
-#include <fstream>
 #include <vector>
 #include <functional>
-#include <thread> 
-#include <chrono> 
+#include <thread>
+#include <chrono>
 
-#include "Heroi.h" 
+#include "Heroi.h"
 #include "Inimigo.h"
 #include "Vampiro.h"
 #include "Orc.h"
 #include "Goblin.h"
 #include "Item.h"
-#include "PocaoVida.h" 
-#include "PocaoMana.h"
+#include "ItemFactory.h"
+#include "SaveManager.h"
 
-void limparTela();
-void menuLoja(Heroi &h); 
-void salvarJogo(Heroi &h, int round);
-bool carregarJogo(Heroi &h, int &round);
+#define RESET  "\033[0m"
+#define YELLOW "\033[33m"
 
-struct LootBau {
-    std::string nome;
-    std::function<void()> acao; 
-};
+// ---------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------
 
-std::vector<LootBau> possiveisItens;
+void limparTela() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
 
+// ---------------------------------------------------------------
+// Shop
+// ---------------------------------------------------------------
+
+void menuLoja(Heroi& h) {
+    bool sair = false;
+    do {
+        limparTela();
+        std::cout << "=== LOJA ===\n";
+        std::cout << "Ouro: " << h.getOuro() << "\n\n";
+        std::cout << "[1] Pocao Pequena  (50g)   [2] Pocao Grande   (100g)\n";
+        std::cout << "[3] Afiar Espada   (150g)  [4] Pocao Mana      (70g)\n";
+        std::cout << "[5] Frasco Veneno   (80g)  [6] Sair\n";
+
+        int op;
+        std::cin >> op;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        auto comprar = [&](int custo, int idItem) {
+            if (h.getOuro() >= custo) {
+                h.diminuirOuro(custo);
+                h.adicionarItem(criarItem(idItem));
+            } else {
+                std::cout << "Ouro insuficiente!\n";
+                std::cout << "Pressione Enter para continuar...";
+                std::cin.get();
+            }
+        };
+
+        switch (op) {
+            case 1: comprar(50,  1); break;
+            case 2: comprar(100, 2); break;
+            case 3:
+                if (h.getOuro() >= 150) { h.diminuirOuro(150); h.aumentarDano(5); std::cout << "Espada afiada! +5 dano.\n"; }
+                else { std::cout << "Ouro insuficiente!\n"; std::cout << "Pressione Enter..."; std::cin.get(); }
+                break;
+            case 4: comprar(70,  3); break;
+            case 5: comprar(80,  4); break;
+            case 6: sair = true;     break;
+            default:
+                std::cout << "Opcao invalida.\n";
+                std::cout << "Pressione Enter para continuar...";
+                std::cin.get();
+        }
+    } while (!sair);
+}
+
+// ---------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------
 
 int main() {
-    srand(time(0));
+    srand(static_cast<unsigned>(time(nullptr)));
 
     std::cout << "--- RPG TERMINAL ---\n";
     std::cout << "[1] Novo Jogo\n[2] Carregar Jogo\nEscolha: ";
@@ -42,57 +94,45 @@ int main() {
 
     std::string nomeJogador = "Viajante";
     int round = 1;
-    bool carregou = false;
 
     if (opInicial == 1) {
         std::cout << "Digite o nome do heroi: ";
         std::getline(std::cin, nomeJogador);
     }
-    
+
     Heroi heroi(nomeJogador);
 
-    possiveisItens.push_back({
-        "Baú Misterioso: Poção Grande",
-        [&]() { 
-            std::cout << "Você abriu o baú e encontrou uma Pocao Grande!\n"; 
-            heroi.adicionarItem(std::make_unique<PocaoVida>(2, "Pocao Grande", "Recupera 100 HP", 100));
-        }
-    });
-
-    possiveisItens.push_back({
-        "Baú Misterioso: Poção de Mana",
-        [&]() { 
-            std::cout << "Dentro havia uma Pocao de Mana!\n";
-            heroi.adicionarItem(std::make_unique<PocaoMana>(3, "Pocao Mana", "Recupera 30 MP", 30));
-        }
-    });
-
     if (opInicial == 2) {
-        if (carregarJogo(heroi, round)) {
-            carregou = true;
-        } else {
+        if (!SaveManager::carregar(heroi, round)) {
             std::cout << "Iniciando novo jogo...\n";
-            heroi.adicionarItem(std::make_unique<PocaoVida>(1, "Pocao Pequena", "Recupera 50 HP", 50));
+            heroi.adicionarItem(criarItem(1));
         }
     } else {
-        heroi.adicionarItem(std::make_unique<PocaoVida>(1, "Pocao Pequena", "Recupera 50 HP", 50));
-        heroi.adicionarItem(std::make_unique<PocaoVida>(1, "Pocao Pequena", "Recupera 50 HP", 50));
+        heroi.adicionarItem(criarItem(1));
+        heroi.adicionarItem(criarItem(1));
     }
 
-    while(heroi.estaVivo()) { 
+    // Loot chest pool — add new entries here alongside ItemFactory
+    struct LootBau { std::string nome; std::function<void()> acao; };
+    std::vector<LootBau> possiveisItens = {
+        {"Pocao Grande",      [&]() { std::cout << "Uma Pocao Grande brilha no bau!\n";         heroi.adicionarItem(criarItem(2)); }},
+        {"Pocao de Mana",     [&]() { std::cout << "Uma Pocao de Mana fumega no bau!\n";         heroi.adicionarItem(criarItem(3)); }},
+        {"Frasco de Veneno",  [&]() { std::cout << "Um Frasco de Veneno verde esta no bau!\n";   heroi.adicionarItem(criarItem(4)); }},
+    };
+
+    // ---------------------------------------------------------------
+    // Game loop
+    // ---------------------------------------------------------------
+    while (heroi.estaVivo()) {
         std::unique_ptr<Inimigo> vilao;
 
         int randomMonster = rand() % 100;
-        if (randomMonster < 20) {
-            vilao = std::make_unique<Vampiro>(round);
-        } else if (randomMonster < 60) {
-            vilao = std::make_unique<Orc>(round);
-        } else {
-            vilao = std::make_unique<Goblin>(round);
-        }
+        if      (randomMonster < 20) vilao = std::make_unique<Vampiro>(round);
+        else if (randomMonster < 60) vilao = std::make_unique<Orc>(round);
+        else                         vilao = std::make_unique<Goblin>(round);
 
         std::cout << "\n>>> ROUND " << round << " <<<\n";
-        std::cout << "Um " << vilao->getNome() << " apareceu!\n";
+        std::cout << "Um " << vilao->getNome() << " apareceu!\n\n";
 
         std::cout << "O que deseja fazer?\n[1] Lutar  [2] Salvar Jogo  [3] Sair\n";
         int opMenu;
@@ -100,208 +140,124 @@ int main() {
         std::cin.ignore();
 
         if (opMenu == 2) {
-            salvarJogo(heroi, round);
+            SaveManager::salvar(heroi, round);
             std::cout << "Pressione Enter para continuar...";
             std::cin.get();
         } else if (opMenu == 3) {
             std::cout << "Saindo...\n";
-            break; 
+            break;
         }
 
-        while(vilao->estaVivo() && heroi.estaVivo()) {
+        // -----------------------------------------------------------
+        // Battle loop
+        // -----------------------------------------------------------
+        while (vilao->estaVivo() && heroi.estaVivo()) {
             limparTela();
             std::cout << "--- BATTLE ROUND " << round << " ---\n";
-            heroi.desenharBarra(); 
+            heroi.desenharBarra();
             vilao->desenharBarra();
+            std::cout << "\n";
 
-            bool isNotValid = true;
+            // Tick status effects (check stun BEFORE decrementing it)
+            bool heroiAtordoado = heroi.estaAtordoado();
+            heroi.tickEfeitos();
+            vilao->tickEfeitos();
 
-            do{
-                std::cout << "\n[1] Atacar  [2] Mochila  [3] Habilidades\nEscolha: ";
-                int escolha;
-                std::cin >> escolha;
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
+            if (!heroi.estaVivo() || !vilao->estaVivo()) break;
 
-                if (escolha == 1) {
-                    heroi.atacar(*vilao); 
-                    isNotValid = false;
-                } else if (escolha == 2) {
-                    heroi.mostrarInventario();
-                    std::cout << "Item (-1 voltar): ";
-                    int idx; std::cin >> idx; std::cin.ignore();
-                    if(idx != -1) heroi.usarItem(idx);
-                    isNotValid = false;
-                }
-                else if (escolha == 3) {
-                    std::cout << "[1] Golpe (30mp) [2] Drenar (50mp): ";
-                    int h; std::cin >> h; std::cin.ignore();
-                    if(h==1) heroi.ataqueEspecial(*vilao);
-                    else if(h==2) heroi.drenarVida(*vilao);
-                    isNotValid = false;
-                } else {
-                    std::cout << "Opcao invalida.\n";
-                }
+            // --- Player turn ---
+            if (heroiAtordoado) {
+                std::cout << YELLOW << "Voce esta atordoado! Perdeu o turno.\n" << RESET;
+            } else {
+                bool acaoValida = false;
+                do {
+                    std::cout << "\n[1] Atacar  [2] Mochila  [3] Habilidades\nEscolha: ";
+                    int escolha;
+                    std::cin >> escolha;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-                if (!vilao->estaVivo()) break;
-                std::cout << "\nInimigo ataca...\n";
-                vilao->atacar(heroi);
-                if (!heroi.estaVivo()) break;
-                std::cout << "(Enter)"; std::cin.get();
+                    if (escolha == 1) {
+                        heroi.atacar(*vilao);
+                        acaoValida = true;
+                    } else if (escolha == 2) {
+                        heroi.mostrarInventario();
+                        std::cout << "Item (-1 voltar): ";
+                        int idx; std::cin >> idx; std::cin.ignore();
+                        if (idx != -1) {
+                            Item* itemPtr = heroi.getItemPtr(idx);
+                            if (itemPtr) {
+                                // Offensive items target the enemy; others target self
+                                Personagem* alvo = itemPtr->esOfensivo()
+                                    ? static_cast<Personagem*>(vilao.get())
+                                    : static_cast<Personagem*>(&heroi);
+                                heroi.usarItem(idx, alvo);
+                            }
+                        }
+                        acaoValida = true; // opening bag uses the turn
+                    } else if (escolha == 3) {
+                        std::cout << "[1] Golpe Esmagador (30mp)  [2] Drenar Vida (50mp): ";
+                        int h; std::cin >> h; std::cin.ignore();
+                        if      (h == 1) { heroi.ataqueEspecial(*vilao); acaoValida = true; }
+                        else if (h == 2) { heroi.drenarVida(*vilao);     acaoValida = true; }
+                        else             std::cout << "Opcao invalida.\n";
+                    } else {
+                        std::cout << "Opcao invalida.\n";
+                    }
+                } while (!acaoValida);
+            }
 
-            } while(isNotValid);
+            if (!vilao->estaVivo()) break;
+
+            // --- Enemy turn ---
+            std::cout << "\nInimigo ataca...\n";
+            vilao->atacar(heroi);
+
+            if (!heroi.estaVivo()) break;
+            std::cout << "(Enter)"; std::cin.get();
         }
 
+        // -----------------------------------------------------------
+        // After battle
+        // -----------------------------------------------------------
         if (heroi.estaVivo()) {
-            std::cout << "Venceu! Loot...\n";
+            std::cout << "\nVenceu! Loot...\n";
             heroi.ganharOuro(30);
+            heroi.restaurarMana(20);
+            std::cout << YELLOW << "(Mana +20 pos-batalha)\n" << RESET;
 
+            // Magic chest (30% chance)
             if ((rand() % 100) < 30) {
                 std::cout << "\n*** VOCE ENCONTROU UM BAU MAGICO! ***\n";
-                std::cout << "Deseja abrir? (S - Sim)" << std::endl;
+                std::cout << "Deseja abrir? (S - Sim) ";
                 std::string escolha;
                 std::cin >> escolha;
 
-                if(!escolha.empty() && toupper(escolha[0]) == 'S'){ //??
-                    std::this_thread::sleep_for(std::chrono::milliseconds(800)); // Pequena pausa para suspense
-
-                    int sorteio = rand() % possiveisItens.size();
-                    possiveisItens[sorteio].acao(); // Executa o código específico daquele item!
-
+                if (!escolha.empty() && toupper(escolha[0]) == 'S') {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(800));
+                    int sorteio = rand() % static_cast<int>(possiveisItens.size());
+                    possiveisItens[sorteio].acao();
                 } else {
-                    std::cout << "Ok... siga seu caminho" << std::endl;
+                    std::cout << "Ok... siga seu caminho.\n";
                 }
             }
 
-            bool isNotValid = true;
-            int opLoja {0};
-
-            do{
-                std::cout << "Deseja ir para a loja? (1 - Sim / 2 - Nao)\n";
+            // Shop prompt
+            bool inputValido = false;
+            do {
+                std::cout << "\nDeseja ir para a loja? (1 - Sim / 2 - Nao)\n";
+                int opLoja;
                 std::cin >> opLoja;
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-                if(opLoja == 1){
-                    menuLoja(heroi);
-                    isNotValid = false;
-                } else if (opLoja == 2){
-                    isNotValid = false;
-                } else {
-                    std::cout << "Opcao invalida, pense um pouco mais.\n";
-                }
-                    
-            }while(isNotValid);
+                if      (opLoja == 1) { menuLoja(heroi); inputValido = true; }
+                else if (opLoja == 2) { inputValido = true; }
+                else    std::cout << "Opcao invalida.\n";
+            } while (!inputValido);
 
             round++;
         }
     }
-    
-    std::cout << "FIM DE JOGO.\n";
+
+    std::cout << "\nFIM DE JOGO.\n";
     return 0;
-}
-
-void menuLoja(Heroi &h) {
-    bool sair = false;
-    do {
-        limparTela();
-        std::cout << "=== LOJA ===\n";
-        std::cout << "Ouro: " << h.getOuro() << "\n";
-        std::cout << "[1] Pocao Pequena (50g)  [2] Pocao Grande (100g)\n";
-        std::cout << "[3] Afiar Espada (150g)  [4] Pocao Mana (70g)\n";
-        std::cout << "[5] Sair\n";
-        
-        int op;
-        std::cin >> op;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-        if(op == 5) sair = true;
-        else if(op == 1 && h.getOuro() >= 50) {
-            h.diminuirOuro(50);
-            h.adicionarItem(std::make_unique<PocaoVida>(1, "Pocao Pequena", "Recupera 50 HP", 50)); 
-        }
-        else if(op == 2 && h.getOuro() >= 100) {
-            h.diminuirOuro(100);
-            h.adicionarItem(std::make_unique<PocaoVida>(2, "Pocao Grande", "Recupera 100 HP", 100)); 
-        }
-        else if(op == 3 && h.getOuro() >= 150) {
-            h.diminuirOuro(150);
-            h.aumentarDano(5);
-        } 
-        else if(op == 4 && h.getOuro() >= 70) {
-            h.diminuirOuro(70);
-            h.adicionarItem(std::make_unique<PocaoMana>(3, "Pocao Mana", "Recupera 30 MP", 30));
-        } else {
-            std::cout << "Opcao invalida ou ouro insuficiente.\n";
-            std::cout << "Pressione Enter para continuar...";
-            std::cin.get();
-        }
-    } while(!sair);
-}
-
-void limparTela() {
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
-}
-
-void salvarJogo(Heroi &h, int round) {
-    std::ofstream arquivo("savegame.txt"); 
-    
-    if (arquivo.is_open()) {
-        arquivo << h.getNome() << "\n";
-        arquivo << h.serializarStats() << "\n";
-        arquivo << round << "\n";
-        
-        std::vector<int> inventarioIds = h.getInventarioIds();
-        arquivo << inventarioIds.size() << "\n";
-        for (int id : inventarioIds) {
-            arquivo << id << " ";
-        }
-        arquivo << "\n";
-        
-        std::cout << "\n=== JOGO SALVO COM SUCESSO! ===\n";
-        arquivo.close();
-    } else {
-        std::cout << "Erro ao abrir arquivo de save!\n";
-    }
-}
-
-bool carregarJogo(Heroi &h, int &round) {
-    std::ifstream arquivo("savegame.txt"); 
-    
-    if (arquivo.is_open()) {
-        std::string nome;
-        int v, vm, d, m, mm, o, r, qtdItens;
-
-        std::getline(arquivo, nome); 
-
-        arquivo >> v >> vm >> d >> m >> mm >> o;
-        h.carregarStats(v, vm, d, m, mm, o);
-
-        arquivo >> r;
-        round = r;
-
-        arquivo >> qtdItens;
-        h.limparInventario(); 
-        
-        for(int i=0; i < qtdItens; i++) {
-            int idItem;
-            arquivo >> idItem;
-            if (idItem == 1) {
-                h.adicionarItem(std::make_unique<PocaoVida>(1, "Pocao Pequena", "Recupera 50 HP", 50));
-            } else if (idItem == 2) {
-                h.adicionarItem(std::make_unique<PocaoVida>(2, "Pocao Grande", "Recupera 100 HP", 100));
-            } else if (idItem == 3) {
-                h.adicionarItem(std::make_unique<PocaoMana>(3, "Pocao Mana", "Recupera 30 MP", 30));
-            }
-        }
-
-        std::cout << "\n=== JOGO CARREGADO! (Round " << round << ") ===\n";
-        arquivo.close();
-        return true;
-    } else {
-        std::cout << "Nenhum save encontrado.\n";
-        return false;
-    }
 }

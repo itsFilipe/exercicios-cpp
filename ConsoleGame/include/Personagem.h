@@ -3,13 +3,16 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include "StatusEffect.h"
 
 class Personagem {
-protected: // "Filhos" podem acessar essas variáveis
+protected:
     std::string nome;
     int vida;
     int vidaMaxima;
     int danoBase;
+    std::vector<StatusEffect> efeitos;
 
 public:
     Personagem(std::string n, int v, int d);
@@ -27,10 +30,14 @@ public:
     virtual void receberDano(int dano);
     virtual void desenharBarra();
     
-    // Setter necessário para o Heroi aumentar vida na loja
     void aumentarVidaMaxima(int qtd);
     void aumentarDano(int qtd);
     void receberCura(int quantidade);
+
+    // Status effects
+    void aplicarEfeito(StatusEffect e);
+    void tickEfeitos();
+    bool estaAtordoado() const;
 };
 
 #endif

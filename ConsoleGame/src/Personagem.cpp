@@ -53,3 +53,39 @@ void Personagem::receberCura(int quantidade) {
     if (vida > vidaMaxima) vida = vidaMaxima;
     std::cout << "\033[32m" << nome << " recuperou " << quantidade << " de vida!\033[0m\n";
 }
+
+void Personagem::aplicarEfeito(StatusEffect e) {
+    // Refresh duration if effect is already active
+    for (auto& ef : efeitos) {
+        if (ef.tipo == e.tipo) {
+            ef.duracao = std::max(ef.duracao, e.duracao);
+            ef.valor   = std::max(ef.valor,   e.valor);
+            return;
+        }
+    }
+    efeitos.push_back(e);
+    if (e.tipo == StatusEffect::Tipo::VENENO)
+        std::cout << YELLOW << nome << " foi envenenado!\n" << RESET;
+    else if (e.tipo == StatusEffect::Tipo::ATORDOADO)
+        std::cout << YELLOW << nome << " foi atordoado!\n" << RESET;
+}
+
+void Personagem::tickEfeitos() {
+    std::vector<StatusEffect> restantes;
+    for (auto& ef : efeitos) {
+        if (ef.tipo == StatusEffect::Tipo::VENENO) {
+            std::cout << YELLOW << nome << " sofreu " << ef.valor
+                      << " de dano de veneno!\n" << RESET;
+            receberDano(ef.valor);
+        }
+        ef.duracao--;
+        if (ef.duracao > 0) restantes.push_back(ef);
+    }
+    efeitos = restantes;
+}
+
+bool Personagem::estaAtordoado() const {
+    for (const auto& ef : efeitos)
+        if (ef.tipo == StatusEffect::Tipo::ATORDOADO) return true;
+    return false;
+}

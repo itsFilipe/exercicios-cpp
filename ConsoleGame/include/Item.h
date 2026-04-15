@@ -19,7 +19,8 @@ public:
     std::string getNome() const { return nome; }
     std::string getDescricao() const { return descricao; }
 
-    virtual void aplicar(Personagem* alvo) = 0; 
+    virtual void aplicar(Personagem* alvo) = 0;
+    virtual bool esOfensivo() const { return false; }
 };
 
 #endif

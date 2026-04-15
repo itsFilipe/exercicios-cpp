@@ -6,6 +6,7 @@
 class Goblin : public Inimigo {
 public:
     Goblin(int round);
+    void atacar(Personagem& alvo) override;
 };
 
 #endif

@@ -31,13 +31,17 @@ public:
     void drenarVida(Personagem &alvo);
     void restaurarMana(int quantidade);
 
+    // Mana
+    int getMana() const;
+    int getManaMaxima() const;
+
     // Gestão de Inventário
-    //void adicionarItem(Item* novoItem);
     void adicionarItem(std::unique_ptr<Item> novoItem);
-    void usarItem(int indice);
+    void usarItem(int indice, Personagem* alvo);
+    Item* getItemPtr(int indice) const;
     void mostrarInventario();
-    int getTamanhoInventario() const; 
-    void limparInventario(); // <--- NOVO: Necessário para o Load
+    int getTamanhoInventario() const;
+    void limparInventario();
     std::vector<int> getInventarioIds() const;
 
     // Economia
@@ -47,7 +51,7 @@ public:
 
     // --- SAVE / LOAD ---
     // Estes eram os métodos que faltavam no seu arquivo .h
-    std::string serializarStats(); 
+    std::string serializarStats() const;
     void carregarStats(int v, int vm, int d, int m, int mm, int o);
 };
 

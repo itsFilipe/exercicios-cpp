@@ -72,6 +72,9 @@ void Heroi::restaurarMana(int quantidade) {
     if(mana > manaMaxima) mana = manaMaxima;
 }
 
+int Heroi::getMana() const { return mana; }
+int Heroi::getManaMaxima() const { return manaMaxima; }
+
 // --- SISTEMA DE INVENTÁRIO ---
 
 void Heroi::adicionarItem(std::unique_ptr<Item> novoItem) { 
@@ -97,15 +100,19 @@ void Heroi::mostrarInventario() {
     }
 }
 
-void Heroi::usarItem(int indice) {
-    if (indice < 0 || indice >= inventario.size()) {
+Item* Heroi::getItemPtr(int indice) const {
+    if (indice < 0 || indice >= (int)inventario.size()) return nullptr;
+    return inventario[indice].get();
+}
+
+void Heroi::usarItem(int indice, Personagem* alvo) {
+    if (indice < 0 || indice >= (int)inventario.size()) {
         std::cout << "Item invalido!\n";
         return;
     }
-
     std::unique_ptr<Item> item = std::move(inventario[indice]);
     inventario.erase(inventario.begin() + indice);
-    item->aplicar(this); 
+    item->aplicar(alvo);
 }
 
 int Heroi::getTamanhoInventario() const {
@@ -126,7 +133,7 @@ std::vector<int> Heroi::getInventarioIds() const {
 
 // --- SISTEMA DE SAVE / LOAD ---
 
-std::string Heroi::serializarStats() {
+std::string Heroi::serializarStats() const {
     std::stringstream ss;
     // Ordem: Vida VidaMax Dano Mana ManaMax Ouro
     ss << vida << " " << vidaMaxima << " " << getDano() << " " 
