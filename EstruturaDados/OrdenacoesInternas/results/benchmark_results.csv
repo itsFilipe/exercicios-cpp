@@ -1,0 +1,46 @@
+Algoritmo,Tamanho,Cenario,Tempo_ms,Comparacoes,Swaps
+Counting Sort,5000,Aleatorio,0.140317,19997,5000
+Insertion Sort,5000,Aleatorio,37.422876,6260032,6255043
+Merge Sort,5000,Aleatorio,1.910882,55231,61808
+Selection Sort,5000,Aleatorio,49.795504,12497500,4989
+Quick Sort,5000,Aleatorio,0.790636,66916,31604
+Counting Sort,5000,Ordenado,0.107277,19998,5000
+Insertion Sort,5000,Ordenado,0.036006,4999,0
+Merge Sort,5000,Ordenado,1.495383,32004,61808
+Selection Sort,5000,Ordenado,54.642933,12497500,0
+Quick Sort,5000,Ordenado,0.215126,57963,4094
+Counting Sort,5000,Inv. Ordenado,0.105981,19998,5000
+Insertion Sort,5000,Inv. Ordenado,72.395585,12497500,12497500
+Merge Sort,5000,Inv. Ordenado,1.399393,29804,61808
+Selection Sort,5000,Inv. Ordenado,51.919743,12497500,2500
+Quick Sort,5000,Inv. Ordenado,0.709130,104823,44590
+Counting Sort,10000,Aleatorio,0.304307,39996,10000
+Insertion Sort,10000,Aleatorio,144.670259,25125880,25115892
+Merge Sort,10000,Aleatorio,3.683712,120467,133616
+Selection Sort,10000,Aleatorio,194.683383,49995000,9993
+Quick Sort,10000,Aleatorio,1.601278,144812,70998
+Counting Sort,10000,Ordenado,0.223531,39998,10000
+Insertion Sort,10000,Ordenado,0.052957,9999,0
+Merge Sort,10000,Ordenado,2.809132,69008,133616
+Selection Sort,10000,Ordenado,219.121764,49995000,0
+Quick Sort,10000,Ordenado,0.461123,125916,8190
+Counting Sort,10000,Inv. Ordenado,0.217370,39998,10000
+Insertion Sort,10000,Inv. Ordenado,295.610678,49995000,49995000
+Merge Sort,10000,Inv. Ordenado,4.670901,64608,133616
+Selection Sort,10000,Inv. Ordenado,236.400496,49995000,5000
+Quick Sort,10000,Inv. Ordenado,1.666912,232244,97944
+Counting Sort,50000,Aleatorio,1.449666,199995,50000
+Insertion Sort,50000,Aleatorio,3724.534057,621151767,621101780
+Merge Sort,50000,Aleatorio,23.349891,718358,784464
+Selection Sort,50000,Aleatorio,5217.010625,1249975000,49990
+Quick Sort,50000,Aleatorio,10.091201,852529,420565
+Counting Sort,50000,Ordenado,1.382369,199998,50000
+Insertion Sort,50000,Ordenado,0.265807,49999,0
+Merge Sort,50000,Ordenado,17.716679,401952,784464
+Selection Sort,50000,Ordenado,5503.913768,1249975000,0
+Quick Sort,50000,Ordenado,2.488994,736177,34464
+Counting Sort,50000,Inv. Ordenado,1.170482,199998,50000
+Insertion Sort,50000,Inv. Ordenado,7384.901744,1249975000,1249975000
+Merge Sort,50000,Inv. Ordenado,28.213093,382512,784464
+Selection Sort,50000,Inv. Ordenado,5215.441395,1249975000,25000
+Quick Sort,50000,Inv. Ordenado,10.805190,1416732,587716
