@@ -5,12 +5,9 @@
 std::map<std::string, int> contabilizar(const std::vector<std::string> &producao){
     std::map<std::string, int> producao_contabilizada;
 
-    for(const auto produto : producao){
-        auto it = producao_contabilizada.find(produto);
-        if(it != producao_contabilizada.end())
-            producao_contabilizada[produto] += 1;
-
-        producao_contabilizada[produto] = 1;
+    for(const auto &produto : producao){
+        // O operador [] busca o produto. Se não existir, cria com valor 0 e soma 1.
+        producao_contabilizada[produto] += 1;
     }
 
     return producao_contabilizada;
@@ -22,7 +19,6 @@ void print_map(const std::map<std::string, int>& m){
 }
 
 int main(){
-
     std::vector<std::string> lote = {
     "Terminal de Cobre", "Conector Bimetalico", "Terminal de Cobre",
     "Luva de Emenda", "Conector Bimetalico", "Terminal de Cobre",
