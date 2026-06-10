@@ -144,17 +144,58 @@ int* exercise12(int arr[], int s){
 }
 
 void exercise13(){
+    std::cout << "EXERCICIO 13" << std::endl;
     int matrix[3][3] = {
-     {1, 2, 3},
-     {4, 5, 6},
-     {7, 8, 9}
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 9}
     };
+    
+    // Calculate total elements
+    const int ROWS = 3;
+    const int COLS = 3;
+    const int TOTAL_ELEMENTS = ROWS * COLS;
 
-    int *matrix_ptr = &matrix;
-    int tamanho = sizeof(matrix) / sizeof(int);
+    // The array name 'matrix' can be cast or implicitly converted 
+    // to a pointer to the first element's data type (int*) for contiguous access
+    int* ptr = (int*)matrix; 
 
-    for(int i{0}; i < tamanho ; i++)
+    std::cout << "2D Array elements accessed contiguously:" << std::endl;
+    for (int i = 0; i < TOTAL_ELEMENTS; ++i) {
+        // Access the element using pointer arithmetic
+        std::cout << *(ptr + i) << " "; 
+        
+        // Add a newline after every row (every 3 elements)
+        if ((i + 1) % COLS == 0) {
+            std::cout << std::endl;
+        }
+    }
+
+    std::cout << "---------------" << std::endl;
 }
+
+void exercise14(int *dest, const int *ref, int n){
+    int i{0};
+    while(i < n){
+        *(dest + i) = *(ref + i); 
+        i++;
+    }
+}
+
+bool exercise15(const int *a, const int *b, int n){
+    bool isEqual = true;
+
+    for(int i{0}; i<n ; i++){
+        if( *(a + i) != *(b + i) ){
+            isEqual = false;
+            break;
+        }
+    }
+
+    return isEqual;
+}
+
+void display_ar(int arr[], int n);
 
 //tem até o 30 !!!!!
 
@@ -185,5 +226,39 @@ int main(){
     }
     std::cout << "---------------" << std::endl;
 
+    exercise13();
+
+    std::cout << "EXERCICIO 14" << std::endl;
+    int source[] = {10, 20, 30, 40, 50};
+    int destino[] = {0};
+    exercise14(destino, source, 5);
+    std::cout << "Destination array contents: ";
+    display_ar(destino, 5);
+    std::cout << "\n---------------" << std::endl;
+
+    std::cout << "EXERCICIO 15" << std::endl;
+    int a1[] = {1, 2, 3, 4};
+    int a2[] = {1, 2, 3, 4};
+    int a3[] = {1, 2, 9, 4};
+
+    if(exercise15(a1, a2, 4)){
+        std::cout << "Array a1 and a2 are identical." << std::endl;
+    } else {
+        std::cout << "Array a1 and a2 are NOT identical." << std::endl;
+    }
+
+    if(exercise15(a1, a3, 4)){
+        std::cout << "Array a1 and a3 are identical." << std::endl;
+    } else {
+        std::cout << "Array a1 and a3 are NOT identical." << std::endl;
+    }
+    std::cout << "---------------" << std::endl;
+   
     return 0;
+}
+
+void display_ar(int arr[], int n){
+    for(int i{0}; i < n; i++){
+        std::cout << *(arr + i) << " ";
+    }
 }
