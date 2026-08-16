@@ -195,6 +195,34 @@ bool exercise15(const int *a, const int *b, int n){
     return isEqual;
 }
 
+void exercise16(const int *a, int inicio, int fim){
+    int tam = fim - inicio;
+
+    int arr[tam];
+
+    int i {0};
+    while(i <= tam){
+        *(arr + i) = *(a + i + inicio); 
+        i++;
+    }
+
+    std::cout << "Sub-array elements: ";
+    for(int i {0}; i < tam; i++){
+        std::cout << *(arr + i) << " ";
+    }
+
+    /*     FAZ DNV
+        Eu preciso modificar ou só ler? Se é só ler (imprimir), 
+        eu não crio variáveis novas. 
+        Eu passo um ponteiro const e leio direto da fonte.
+
+        Eu consigo chegar lá usando os endereços? 
+        Em vez de criar um índice i e ficar somando ele ao array, 
+        é mais fácil só criar um ponteiro para o início e 
+        ir dando ptr++ até chegar no fim.
+    */
+}
+
 void display_ar(int arr[], int n);
 
 //tem até o 30 !!!!!
@@ -253,6 +281,13 @@ int main(){
         std::cout << "Array a1 and a3 are NOT identical." << std::endl;
     }
     std::cout << "---------------" << std::endl;
+
+    std::cout << "EXERCICIO 16" << std::endl;
+    int data[] = {10, 20, 30, 40, 50, 60};
+    int start_index = 2;
+    int end_index = 5;  
+    exercise16(data, start_index, end_index);
+    std::cout << "\n---------------" << std::endl;
    
     return 0;
 }
